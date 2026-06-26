@@ -28,7 +28,7 @@ class AuthMiddleware
         $isApi = str_starts_with($uri, '/api/');
 
         if ($isApi) {
-            json_response(['status' => false, 'message' => 'Unauthorized'], 401);
+            json_response(['status' => false, 'message' => 'Unauthorized', 'data' => null], 401);
         }
 
         redirect('/auth/login');

@@ -155,7 +155,7 @@ class SettingController
      */
     public function apiIndex(array $routeVars, array $flash, array $errors, array $oldInput): void
     {
-        json_response(['status' => true, 'data' => $this->settingService->get()]);
+        json_response(['status' => true, 'message' => 'Success', 'data' => $this->settingService->get()]);
     }
 
     /**
@@ -170,9 +170,9 @@ class SettingController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         try {
             $result = $this->settingService->update($body);
-            json_response(['status' => true, 'data' => $result]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $result]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 

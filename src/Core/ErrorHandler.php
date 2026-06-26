@@ -37,8 +37,9 @@ class ErrorHandler
     private static function handleApiError(AppException $e): never
     {
         $payload = [
-            'status' => false,
+            'status'  => false,
             'message' => $e->getMessage(),
+            'data'    => null,
         ];
 
         if ($e instanceof ValidationAppException) {

@@ -259,7 +259,7 @@ class AuthController
         $password = (string)($body['password']      ?? '');
 
         if ($email === '' || $password === '') {
-            json_response(['status' => false, 'message' => 'Email and password are required.'], 422);
+            json_response(['status' => false, 'message' => 'Email and password are required.', 'data' => null], 422);
         }
 
         try {
@@ -274,7 +274,7 @@ class AuthController
                 ],
             ]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 401);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 401);
         }
     }
 
@@ -301,7 +301,7 @@ class AuthController
             } catch (\Throwable) {}
         }
 
-        json_response(['status' => true, 'message' => 'Logged out.']);
+        json_response(['status' => true, 'message' => 'Logged out.', 'data' => null]);
     }
 
     /**
@@ -317,15 +317,15 @@ class AuthController
         $payload    = $this->authService->verifyJwt($token);
 
         if ($payload === null) {
-            json_response(['status' => false, 'message' => 'Unauthorized.'], 401);
+            json_response(['status' => false, 'message' => 'Unauthorized.', 'data' => null], 401);
         }
 
         $user = $this->authService->getUserById((string)($payload['sub'] ?? ''));
         if ($user === null) {
-            json_response(['status' => false, 'message' => 'User not found.'], 404);
+            json_response(['status' => false, 'message' => 'User not found.', 'data' => null], 404);
         }
 
-        json_response(['status' => true, 'data' => $this->safeUser($user)]);
+        json_response(['status' => true, 'message' => 'Success', 'data' => $this->safeUser($user)]);
     }
 
     /**
@@ -343,9 +343,9 @@ class AuthController
 
         try {
             $user = $this->authService->register($body);
-            json_response(['status' => true, 'data' => $this->safeUser($user)], 201);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $this->safeUser($user)], 201);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -365,9 +365,9 @@ class AuthController
 
         try {
             $this->authService->requestOtp($email);
-            json_response(['status' => true, 'message' => 'If that email is registered, an OTP has been sent.']);
+            json_response(['status' => true, 'message' => 'If that email is registered, an OTP has been sent.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -389,9 +389,9 @@ class AuthController
 
         try {
             $this->authService->verifyOtp($email, $otp, $password);
-            json_response(['status' => true, 'message' => 'Password reset successful.']);
+            json_response(['status' => true, 'message' => 'Password reset successful.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 

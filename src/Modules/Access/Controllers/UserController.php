@@ -240,7 +240,7 @@ class UserController
         $perPage = max(1, (int)($filter['q_page_size'] ?? 10));
         $page    = max(1, (int)($filter['q_page']      ?? 1));
         $result  = $this->userService->index($filter, $perPage, $page);
-        json_response(['status' => true, 'data' => $result]);
+        json_response(['status' => true, 'message' => 'Success', 'data' => $result]);
     }
 
     /**
@@ -255,9 +255,9 @@ class UserController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         try {
             $user = $this->userService->create($body);
-            json_response(['status' => true, 'data' => $user->toArray()], 201);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $user->toArray()], 201);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -271,9 +271,9 @@ class UserController
     {
         try {
             $user = $this->userService->findById($routeVars['id'] ?? '');
-            json_response(['status' => true, 'data' => $user->toArray()]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $user->toArray()]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 404);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 404);
         }
     }
 
@@ -289,9 +289,9 @@ class UserController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         try {
             $user = $this->userService->update($routeVars['id'] ?? '', $body);
-            json_response(['status' => true, 'data' => $user->toArray()]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $user->toArray()]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -305,9 +305,9 @@ class UserController
     {
         try {
             $this->userService->delete($routeVars['id'] ?? '');
-            json_response(['status' => true, 'message' => 'Deleted.']);
+            json_response(['status' => true, 'message' => 'Deleted.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 404);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 404);
         }
     }
 
@@ -323,7 +323,7 @@ class UserController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         $ids  = (array)($body['ids'] ?? []);
         $this->userService->deleteSelected(array_map('strval', $ids));
-        json_response(['status' => true, 'message' => 'Deleted.']);
+        json_response(['status' => true, 'message' => 'Deleted.', 'data' => null]);
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────

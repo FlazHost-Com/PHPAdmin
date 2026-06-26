@@ -37,7 +37,7 @@ class MediaController
         $this->requireAuth();
 
         $files = $this->mediaService->list();
-        json_response(['status' => true, 'data' => $files]);
+        json_response(['status' => true, 'message' => 'Success', 'data' => $files]);
     }
 
     /**
@@ -52,14 +52,14 @@ class MediaController
         $this->validateCsrfHeader();
 
         if (!isset($_FILES['file'])) {
-            json_response(['status' => false, 'message' => 'No file provided.'], 400);
+            json_response(['status' => false, 'message' => 'No file provided.', 'data' => null], 400);
         }
 
         try {
             $result = $this->mediaService->upload($_FILES['file']);
-            json_response(['status' => true, 'data' => $result], 201);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $result], 201);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -79,12 +79,12 @@ class MediaController
         $key  = trim((string)($body['key'] ?? ''));
 
         if ($key === '') {
-            json_response(['status' => false, 'message' => 'Missing key.'], 400);
+            json_response(['status' => false, 'message' => 'Missing key.', 'data' => null], 400);
         }
 
         try {
             $this->mediaService->delete($key);
-            json_response(['status' => true, 'message' => 'Deleted.']);
+            json_response(['status' => true, 'message' => 'Deleted.', 'data' => null]);
         } catch (\Throwable $e) {
             $code = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 422;
             json_response(['status' => false, 'message' => $e->getMessage()], $code);
@@ -137,7 +137,7 @@ class MediaController
         AuthMiddleware::run($uri);
 
         if (empty($_SESSION['user_id'])) {
-            json_response(['status' => false, 'message' => 'Unauthenticated.'], 401);
+            json_response(['status' => false, 'message' => 'Unauthenticated.', 'data' => null], 401);
         }
     }
 
@@ -153,7 +153,7 @@ class MediaController
         $sessionToken = (string)($_SESSION['_csrf'] ?? '');
 
         if ($sessionToken === '' || !hash_equals($sessionToken, $headerToken)) {
-            json_response(['status' => false, 'message' => 'CSRF token mismatch.'], 419);
+            json_response(['status' => false, 'message' => 'CSRF token mismatch.', 'data' => null], 419);
         }
     }
 }

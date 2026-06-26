@@ -48,7 +48,7 @@ class RateLimitMiddleware
     {
         if (self::isExceeded($key, $maxReq, $windowSec)) {
             if (session_status() === PHP_SESSION_ACTIVE) {
-                $_SESSION['_flash'] = ['key' => 'error', 'message' => 'Too many requests. Please try again later.'];
+                $_SESSION['flash'] = ['error' => 'Too many requests. Please try again later.'];
             }
             $ref = (string)($_SERVER['HTTP_REFERER'] ?? '/');
             header('Location: ' . $ref);

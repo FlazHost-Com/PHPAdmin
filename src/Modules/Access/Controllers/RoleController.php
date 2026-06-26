@@ -303,7 +303,7 @@ class RoleController
         $filter  = $_GET;
         $perPage = max(1, (int)($filter['q_page_size'] ?? 10));
         $page    = max(1, (int)($filter['q_page']      ?? 1));
-        json_response(['status' => true, 'data' => $this->roleService->index($filter, $perPage, $page)]);
+        json_response(['status' => true, 'message' => 'Success', 'data' => $this->roleService->index($filter, $perPage, $page)]);
     }
 
     /**
@@ -318,9 +318,9 @@ class RoleController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         try {
             $role = $this->roleService->create($body);
-            json_response(['status' => true, 'data' => $role->toArray()], 201);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $role->toArray()], 201);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -334,9 +334,9 @@ class RoleController
     {
         try {
             $role = $this->roleService->findById($routeVars['id'] ?? '');
-            json_response(['status' => true, 'data' => $role->toArray()]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $role->toArray()]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 404);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 404);
         }
     }
 
@@ -352,9 +352,9 @@ class RoleController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         try {
             $role = $this->roleService->update($routeVars['id'] ?? '', $body);
-            json_response(['status' => true, 'data' => $role->toArray()]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $role->toArray()]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -368,9 +368,9 @@ class RoleController
     {
         try {
             $this->roleService->delete($routeVars['id'] ?? '');
-            json_response(['status' => true, 'message' => 'Deleted.']);
+            json_response(['status' => true, 'message' => 'Deleted.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 404);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 404);
         }
     }
 
@@ -386,7 +386,7 @@ class RoleController
         $body = json_decode((string)file_get_contents('php://input'), true) ?? [];
         $ids  = array_map('strval', (array)($body['ids'] ?? []));
         $this->roleService->deleteSelected($ids);
-        json_response(['status' => true, 'message' => 'Deleted.']);
+        json_response(['status' => true, 'message' => 'Deleted.', 'data' => null]);
     }
 
     /**
@@ -403,9 +403,9 @@ class RoleController
         try {
             $result = $this->roleService->getPermissions($routeVars['id'] ?? '', $filter, $perPage, $page);
             unset($result['role']); // strip Eloquent model before JSON encode
-            json_response(['status' => true, 'data' => $result]);
+            json_response(['status' => true, 'message' => 'Success', 'data' => $result]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 404);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 404);
         }
     }
 
@@ -419,9 +419,9 @@ class RoleController
     {
         try {
             $this->roleService->assignPermission($routeVars['id'] ?? '', $routeVars['permission_id'] ?? '');
-            json_response(['status' => true, 'message' => 'Permission assigned.']);
+            json_response(['status' => true, 'message' => 'Permission assigned.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -435,9 +435,9 @@ class RoleController
     {
         try {
             $this->roleService->unassignPermission($routeVars['id'] ?? '', $routeVars['permission_id'] ?? '');
-            json_response(['status' => true, 'message' => 'Permission unassigned.']);
+            json_response(['status' => true, 'message' => 'Permission unassigned.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -454,9 +454,9 @@ class RoleController
         $permIds = array_map('strval', (array)($body['permission_ids'] ?? []));
         try {
             $this->roleService->assignSelected($routeVars['id'] ?? '', $permIds);
-            json_response(['status' => true, 'message' => 'Permissions assigned.']);
+            json_response(['status' => true, 'message' => 'Permissions assigned.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 
@@ -473,9 +473,9 @@ class RoleController
         $permIds = array_map('strval', (array)($body['permission_ids'] ?? []));
         try {
             $this->roleService->unassignSelected($routeVars['id'] ?? '', $permIds);
-            json_response(['status' => true, 'message' => 'Permissions unassigned.']);
+            json_response(['status' => true, 'message' => 'Permissions unassigned.', 'data' => null]);
         } catch (\Throwable $e) {
-            json_response(['status' => false, 'message' => $e->getMessage()], 422);
+            json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
     }
 

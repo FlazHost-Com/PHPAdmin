@@ -40,6 +40,22 @@ if (!function_exists('hasAccess')) {
     }
 }
 
+if (!function_exists('hasRole')) {
+    /**
+     * Check if the currently authenticated user has a given role.
+     *
+     * Reads roles from $_SESSION['user_roles'] set at login time.
+     */
+    function hasRole(string $roleName): bool
+    {
+        if (empty($_SESSION['user_id'])) {
+            return false;
+        }
+        $roles = $_SESSION['user_roles'] ?? [];
+        return in_array($roleName, $roles, true);
+    }
+}
+
 if (!function_exists('sidebarNavActive')) {
     /**
      * Return ' active' CSS class suffix when the current URI starts with a segment.
