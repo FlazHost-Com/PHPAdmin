@@ -50,8 +50,9 @@ final class InitialSeed extends AbstractSeed
                 [
                     'id'         => $roleId,
                     'name'       => 'Administrator',
+                    'guard_name' => 'web',
                     'status'     => 'Active',
-                    'desc'       => 'Full system access',
+                    'desc'       => '',
                     'created_at' => $now,
                     'updated_at' => $now,
                 ],
@@ -70,16 +71,19 @@ final class InitialSeed extends AbstractSeed
 
             $this->table('users')->insert([
                 [
-                    'id'         => $userId,
-                    'code'       => 'ADM001',
-                    'name'       => 'Administrator',
-                    'email'      => 'admin@admin.com',
-                    'password'   => $passwordHash,
-                    'status'     => 'Active',
-                    'blocked'    => 0,
-                    'timezone'   => 'UTC',
-                    'created_at' => $now,
-                    'updated_at' => $now,
+                    'id'                => $userId,
+                    'code'              => '0000000001',
+                    'name'              => 'Administrator',
+                    'phone'             => '12345678910',
+                    'email'             => 'admin@admin.com',
+                    'email_verified_at' => $now,
+                    'password'          => $passwordHash,
+                    'status'            => 'Active',
+                    'blocked'           => 0,
+                    'blocked_reason'    => '',
+                    'timezone'          => 'Asia/Jakarta',
+                    'created_at'        => $now,
+                    'updated_at'        => $now,
                 ],
             ])->saveData();
         } else {
