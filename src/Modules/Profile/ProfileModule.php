@@ -38,5 +38,9 @@ class ProfileModule
         // PUT — update profile (submitted via POST + _method=PUT)
         $r->addRoute('PUT', '/admin/v1/profile/update', [ProfileController::class, 'update']);
         $registry->register('admin.v1.profile.update', 'PUT', '/admin/v1/profile/update');
+
+        // API: GET — return profile as JSON (JWT auth)
+        $r->addRoute('GET', '/api/v1/profile', [ProfileController::class, 'apiIndex']);
+        $registry->register('api.v1.profile.index', 'GET', '/api/v1/profile');
     }
 }

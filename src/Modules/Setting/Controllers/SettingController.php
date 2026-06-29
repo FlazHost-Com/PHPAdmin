@@ -106,9 +106,8 @@ class SettingController
             if ($slug !== '') {
                 try {
                     $this->feTemplateService->ensure($slug);
-                } catch (\Throwable $e) {
-                    flash_error($e->getMessage());
-                    redirect(route('admin.v1.setting.index'));
+                } catch (\Throwable) {
+                    // Template caching is best-effort; setting was already saved successfully
                 }
             }
 
@@ -153,17 +152,6 @@ class SettingController
      * @param array<string,string> $errors
      * @param array<string,mixed>  $oldInput
      */
-    public function apiIndex(array $routeVars, array $flash, array $errors, array $oldInput): void
-    {
-        json_response(['status' => true, 'message' => 'Success', 'data' => $this->settingService->get()]);
-    }
-
-    /**
-     * @param array<string,string> $routeVars
-     * @param array<string,string> $flash
-     * @param array<string,string> $errors
-     * @param array<string,mixed>  $oldInput
-     */
     public function apiUpdate(array $routeVars, array $flash, array $errors, array $oldInput): void
     {
         /** @var array<string,mixed> $body */
@@ -174,6 +162,26 @@ class SettingController
         } catch (\Throwable $e) {
             json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }
+    }
+
+    // ─── API handlers ────────────────────────────────────────────────────────
+
+    /**
+     * @param array<string,string> $routeVars
+     * @param array<string,string> $flash
+     * @param array<string,string> $errors
+     * @param array<string,mixed>  $oldInput
+     */
+    public function apiIndex(array $routeVars, array $flash, array $errors, array $oldInput): void
+    {
+        require_api_auth();
+        $data = $this->settingService->get();
+        json_response(['status' => true, 'message' => 'Success', 'data' => [
+            'id'          => $data['id']          ?? '',
+            'name'        => $data['name']        ?? '',
+            'theme'       => $data['theme']       ?? '',
+            'fe_template' => $data['fe_template'] ?? '',
+        ]]);
     }
 
     // ─── Private helpers ─────────────────────────────────────────────────────

@@ -22,7 +22,7 @@ declare(strict_types=1);
     <h1 class="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
     <p class="text-sm text-gray-600">Selamat datang kembali, <?= e($currentUser?->name ?? 'Admin') ?>! Berikut ringkasan hari ini.</p>
   </div>
-  <span class="text-sm text-gray-500"><?= date('Y-m-d H:i') ?></span>
+  <span class="text-sm text-gray-500" id="dash-date"></span>
 </div>
 
 <!-- ===== Stats Cards ===== -->
@@ -118,17 +118,22 @@ declare(strict_types=1);
   <div class="bg-white rounded-xl shadow-lg p-6">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activities</h3>
     <div class="space-y-4">
-      <?php foreach ($activities as $act): ?>
-      <div class="flex items-center gap-3 p-3 rounded-lg" style="background:<?= e($act['bg']) ?>">
-        <div class="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style="background:<?= e($act['bg'] === 'var(--theme-light)' ? 'var(--primary)' : $act['bg']) ?>">
-          <i class="fas <?= e($act['icon']) ?> text-xs" style="color:<?= e($act['iconColor']) ?>"></i>
-        </div>
-        <div class="flex-1">
-          <p class="text-sm font-medium text-gray-800"><?= e($act['title']) ?></p>
-          <p class="text-xs text-gray-500"><?= e($act['subtitle']) ?></p>
-        </div>
+      <div class="flex items-center gap-3 p-3 rounded-lg" style="background:var(--theme-light)">
+        <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background:var(--primary)"><i class="fas fa-user text-white text-xs"></i></div>
+        <div class="flex-1"><p class="text-sm font-medium text-gray-800">New user registered</p><p class="text-xs text-gray-500">john.doe@example.com - 2 minutes ago</p></div>
       </div>
-      <?php endforeach; ?>
+      <div class="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center"><i class="fas fa-shopping-cart text-white text-xs"></i></div>
+        <div class="flex-1"><p class="text-sm font-medium text-gray-800">New order placed</p><p class="text-xs text-gray-500">Order #12345 - $299.99 - 15 minutes ago</p></div>
+      </div>
+      <div class="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg">
+        <div class="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center"><i class="fas fa-exclamation text-white text-xs"></i></div>
+        <div class="flex-1"><p class="text-sm font-medium text-gray-800">Low stock alert</p><p class="text-xs text-gray-500">Product ABC - Only 5 items left - 1 hour ago</p></div>
+      </div>
+      <div class="flex items-center gap-3 p-3 bg-purple-50 rounded-lg">
+        <div class="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center"><i class="fas fa-star text-white text-xs"></i></div>
+        <div class="flex-1"><p class="text-sm font-medium text-gray-800">New review received</p><p class="text-xs text-gray-500">5 stars for Product XYZ - 2 hours ago</p></div>
+      </div>
     </div>
   </div>
 
@@ -296,6 +301,20 @@ declare(strict_types=1);
 </div>
 
 <script>
+  // Live clock for dash-date (matches NodeAdmin now() behaviour)
+  (function () {
+    function pad(n) { return String(n).padStart(2, '0'); }
+    function tick() {
+      var d = new Date();
+      var s = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate())
+            + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+      var el = document.getElementById('dash-date');
+      if (el) el.textContent = s;
+    }
+    tick();
+    setInterval(tick, 1000);
+  })();
+
   // Theme accent from server (matches template-switcher)
   var THEME = <?= json_encode($theme, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>;
 

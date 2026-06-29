@@ -30,23 +30,21 @@ $pageUrl = static function (int $p) use ($filter, $role): string {
 
 <div class="tw-card p-0 overflow-hidden">
   <div class="px-6 py-4 border-b flex items-center justify-between">
-    <h2 class="text-lg font-bold" style="color:var(--primary)">
-      Permission List &mdash; <span class="text-base font-normal"><?= e($role->name) ?></span>
-    </h2>
+    <h2 class="text-lg font-bold" style="color:var(--primary)">Permission List</h2>
     <div class="btn-group btn-sm">
       <button type="submit" form="selection"
               formmethod="post"
               formaction="<?= e(route('admin.v1.access.role.permission.assign_selected', ['id' => $role->id])) ?>"
               data-confirm="Confirm Assign"
               class="btn btn-info btn-sm">
-        <i class="fas fa-fw fa-check"></i> Assign Selected
+        <i class="fas fa-check"></i> Assign Selected
       </button>
       <button type="submit" form="selection"
               formmethod="post"
               formaction="<?= e(route('admin.v1.access.role.permission.unassign_selected', ['id' => $role->id])) ?>"
               data-confirm="Confirm Unassign"
               class="btn btn-danger btn-sm">
-        <i class="fas fa-fw fa-times"></i> Unassign Selected
+        <i class="fas fa-times"></i> Unassign Selected
       </button>
     </div>
   </div>
@@ -76,8 +74,8 @@ $pageUrl = static function (int $p) use ($filter, $role): string {
             <th width="15%"><input id="q_desc" type="text" class="form-control" name="q_desc" value="<?= e($filter['q_desc'] ?? '') ?>"></th>
             <th width="5%" class="text-center align-middle">
               <div class="btn-group">
-                <button type="submit" form="searchform" class="btn btn-sm btn-success"><i class="fas fa-fw fa-search"></i></button>
-                <a href="<?= e(route('admin.v1.access.role.permission', ['id' => $role->id])) ?>" class="btn btn-sm btn-danger"><i class="fas fa-fw fa-times"></i></a>
+                <button type="submit" form="searchform" class="btn btn-sm btn-success"><i class="fas fa-search"></i></button>
+                <a href="<?= e(route('admin.v1.access.role.permission', ['id' => $role->id])) ?>" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></a>
               </div>
             </th>
           </tr>
@@ -109,14 +107,14 @@ $pageUrl = static function (int $p) use ($filter, $role): string {
             <td><?= e((string)($item->desc ?? '')) ?></td>
             <td class="text-center">
               <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle-dd aria-expanded="false">Action</button>
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle-dd aria-expanded="false">Action</button>
                 <div class="dropdown-menu dropdown-menu-end">
                   <a href="<?= e(route('admin.v1.access.role.permission.assign', ['id' => $role->id, 'permission_id' => $item->id])) ?>" class="dropdown-item">
-                    <i class="fas fa-check fa-fw"></i> Assign
+                    <i class="fas fa-check"></i> Assign
                   </a>
                   <div class="dropdown-divider"></div>
                   <a href="<?= e(route('admin.v1.access.role.permission.unassign', ['id' => $role->id, 'permission_id' => $item->id])) ?>" class="dropdown-item danger">
-                    <i class="fas fa-times fa-fw"></i> Unassign
+                    <i class="fas fa-times"></i> Unassign
                   </a>
                 </div>
               </div>

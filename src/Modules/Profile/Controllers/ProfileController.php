@@ -84,6 +84,30 @@ class ProfileController
         redirect(route('admin.v1.profile.index'));
     }
 
+    // ─── API handlers ────────────────────────────────────────────────────────
+
+    /**
+     * @param array<string,string> $routeVars
+     * @param array<string,string> $flash
+     * @param array<string,string> $errors
+     * @param array<string,mixed>  $oldInput
+     */
+    public function apiIndex(array $routeVars, array $flash, array $errors, array $oldInput): void
+    {
+        $payload = require_api_auth();
+        $userId  = (string)($payload['sub'] ?? '');
+        $data    = $this->profileService->getProfile($userId);
+        $user    = $data['data'] ?? $data;
+        json_response(['status' => true, 'message' => 'Success', 'data' => [
+            'id'       => $user['id']       ?? '',
+            'name'     => $user['name']     ?? '',
+            'email'    => $user['email']    ?? '',
+            'timezone' => $user['timezone'] ?? '',
+            'picture'  => $user['picture']  ?? '',
+            'status'   => $user['status']   ?? '',
+        ]]);
+    }
+
     // ─── Private helpers ─────────────────────────────────────────────────────
 
     /**

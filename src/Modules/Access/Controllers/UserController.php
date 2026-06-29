@@ -236,6 +236,7 @@ class UserController
      */
     public function apiIndex(array $routeVars, array $flash, array $errors, array $oldInput): void
     {
+        require_api_auth();
         $filter  = $_GET;
         $perPage = max(1, (int)($filter['q_page_size'] ?? 10));
         $page    = max(1, (int)($filter['q_page']      ?? 1));
@@ -356,7 +357,7 @@ class UserController
      *
      * @param array<string, mixed> $data
      */
-    private function renderAdmin(string $viewFile, array $data = [], string $title = 'PHPAdmin'): void
+    private function renderAdmin(string $viewFile, array $viewData = [], string $title = 'PHPAdmin'): void
     {
         $setting   = SettingCache::get() ?? [];
         $themeName = (string)($setting['theme'] ?? 'Blue');
@@ -368,7 +369,7 @@ class UserController
             $themeName = 'Blue';
         }
 
-        $currentUser = $data['authUser'] ?? null;
+        $currentUser = $viewData['authUser'] ?? null;
 
         $pageData = array_merge([
             'theme'       => $theme,
@@ -381,7 +382,7 @@ class UserController
             'errors'      => [],
             'oldInput'    => [],
             'pageTitle'   => $title . ' — ' . $this->config->appName,
-        ], $data);
+        ], $viewData);
 
         ob_start();
         extract($pageData, EXTR_SKIP);

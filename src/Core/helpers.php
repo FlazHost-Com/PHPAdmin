@@ -188,6 +188,48 @@ if (!function_exists('json_response')) {
     }
 }
 
+if (!function_exists('require_api_auth')) {
+    /**
+     * Validate the Bearer token from Authorization header and return the JWT payload.
+     * Aborts with 401 JSON response if token is missing or invalid.
+     *
+     * @return array<string,mixed>
+     */
+    function require_api_auth(): array
+    {
+        $authHeader = (string)($_SERVER['HTTP_AUTHORIZATION'] ?? '');
+        $token      = str_starts_with($authHeader, 'Bearer ') ? substr($authHeader, 7) : '';
+        if ($token === '') {
+            json_response(['status' => false, 'message' => 'Unauthorized', 'data' => null], 401);
+            exit;
+        }
+        try {
+            $secret  = (string)($_ENV['JWT_SECRET'] ?? '');
+            $decoded = \Firebase\JWT\JWT::decode($token, new \Firebase\JWT\Key($secret, 'HS256'));
+            $payload = (array)$decoded;
+            // Check blacklist if Redis is available
+            $jti = (string)($payload['jti'] ?? '');
+            if ($jti !== '' && class_exists(\PHPAdmin\Core\RedisSessionHandler::class)) {
+                $redisHost = (string)($_ENV['REDIS_HOST'] ?? '');
+                if ($redisHost !== '') {
+                    try {
+                        $redis = new \Predis\Client(['scheme' => 'tcp', 'host' => $redisHost,
+                            'port' => (int)($_ENV['REDIS_PORT'] ?? 6379)]);
+                        if ($redis->exists("jwt_blacklist:{$jti}")) {
+                            json_response(['status' => false, 'message' => 'Token revoked', 'data' => null], 401);
+                            exit;
+                        }
+                    } catch (\Throwable) {}
+                }
+            }
+            return $payload;
+        } catch (\Throwable) {
+            json_response(['status' => false, 'message' => 'Invalid or expired token', 'data' => null], 401);
+            exit;
+        }
+    }
+}
+
 if (!function_exists('uuid')) {
     /**
      * Generate a RFC4122 v4 UUID.

@@ -31,14 +31,14 @@ $pageUrl = static function (int $p) use ($filter): string {
     <h2 class="text-lg font-bold" style="color:var(--primary)">Role List</h2>
     <div class="btn-group btn-sm">
       <a href="<?= e(route('admin.v1.access.role.create')) ?>" class="btn btn-success btn-sm">
-        <i class="fas fa-fw fa-plus"></i> Add Data
+        <i class="fas fa-plus"></i> Add Data
       </a>
       <button type="submit" form="selection"
               formmethod="post"
               formaction="<?= e(route('admin.v1.access.role.delete_selected')) ?>"
               data-confirm="Confirm Delete"
               class="btn btn-danger btn-sm">
-        <i class="fas fa-fw fa-times"></i> Delete Selected
+        <i class="fas fa-times"></i> Delete Selected
       </button>
     </div>
   </div>
@@ -68,8 +68,8 @@ $pageUrl = static function (int $p) use ($filter): string {
             <th width="13%"><input id="q_desc" type="text" class="form-control" name="q_desc" value="<?= e($filter['q_desc'] ?? '') ?>"></th>
             <th width="5%" class="text-center align-middle">
               <div class="btn-group">
-                <button type="submit" form="searchform" class="btn btn-sm btn-success"><i class="fas fa-fw fa-search"></i></button>
-                <a href="<?= e(route('admin.v1.access.role.index')) ?>" class="btn btn-sm btn-danger"><i class="fas fa-fw fa-times"></i></a>
+                <button type="submit" form="searchform" class="btn btn-sm btn-success"><i class="fas fa-search"></i></button>
+                <a href="<?= e(route('admin.v1.access.role.index')) ?>" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></a>
               </div>
             </th>
           </tr>
@@ -101,13 +101,13 @@ $pageUrl = static function (int $p) use ($filter): string {
             <td><?= e((string)($item->desc ?? '')) ?></td>
             <td class="text-center">
               <div class="btn-group">
-                <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle-dd aria-expanded="false">Action</button>
+                <button type="button" class="btn btn-primary dropdown-toggle" data-toggle-dd aria-expanded="false">Action</button>
                 <div class="dropdown-menu dropdown-menu-end">
                   <a href="<?= e(route('admin.v1.access.role.permission', ['id' => $item->id])) ?>" class="dropdown-item">
-                    <i class="fas fa-key fa-fw"></i> Permission
+                    <i class="fas fa-key"></i> Permission
                   </a>
                   <a href="<?= e(route('admin.v1.access.role.edit', ['id' => $item->id])) ?>" class="dropdown-item">
-                    <i class="fas fa-pen fa-fw"></i> Edit
+                    <i class="fas fa-pen"></i> Edit
                   </a>
                   <div class="dropdown-divider"></div>
                   <?php
@@ -116,7 +116,7 @@ $pageUrl = static function (int $p) use ($filter): string {
                   ?>
                   <form method="post" action="<?= e($deleteUrl) ?>" class="m-0">
                     <button type="submit" data-confirm="Confirm Delete" class="dropdown-item danger">
-                      <i class="fas fa-trash fa-fw"></i> Delete
+                      <i class="fas fa-trash"></i> Delete
                     </button>
                   </form>
                 </div>

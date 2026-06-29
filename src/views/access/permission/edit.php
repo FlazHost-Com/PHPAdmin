@@ -40,9 +40,15 @@ $updateUrl = route('admin.v1.access.permission.update', ['id' => $data->id]) . '
 
     <div class="mb-3">
       <label for="method" class="form-label fw-semibold">Method</label>
-      <input id="method" type="text"
-             class="form-control <?= has_error('method') ? 'is-invalid' : '' ?>"
-             name="method" value="<?= e((string)($data->method ?? '')) ?>">
+      <select id="method" name="method"
+              class="form-control <?= has_error('method') ? 'is-invalid' : '' ?>">
+        <option value="">-- Select Method --</option>
+        <option value="GET"    <?= ($data->method ?? '') === 'GET'    ? 'selected' : '' ?>>GET</option>
+        <option value="POST"   <?= ($data->method ?? '') === 'POST'   ? 'selected' : '' ?>>POST</option>
+        <option value="PUT"    <?= ($data->method ?? '') === 'PUT'    ? 'selected' : '' ?>>PUT</option>
+        <option value="PATCH"  <?= ($data->method ?? '') === 'PATCH'  ? 'selected' : '' ?>>PATCH</option>
+        <option value="DELETE" <?= ($data->method ?? '') === 'DELETE' ? 'selected' : '' ?>>DELETE</option>
+      </select>
       <?php if (has_error('method')): ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php endif; ?>
     </div>
 

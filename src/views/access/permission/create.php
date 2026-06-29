@@ -36,9 +36,15 @@ declare(strict_types=1);
 
     <div class="mb-3">
       <label for="method" class="form-label fw-semibold">Method</label>
-      <input id="method" type="text"
-             class="form-control <?= has_error('method') ? 'is-invalid' : '' ?>"
-             name="method" value="<?= old('method') ?>">
+      <select id="method" name="method"
+              class="form-control <?= has_error('method') ? 'is-invalid' : '' ?>">
+        <option value="">-- Select Method --</option>
+        <option value="GET"    <?= old('method') === 'GET'    ? 'selected' : '' ?>>GET</option>
+        <option value="POST"   <?= old('method') === 'POST'   ? 'selected' : '' ?>>POST</option>
+        <option value="PUT"    <?= old('method') === 'PUT'    ? 'selected' : '' ?>>PUT</option>
+        <option value="PATCH"  <?= old('method') === 'PATCH'  ? 'selected' : '' ?>>PATCH</option>
+        <option value="DELETE" <?= old('method') === 'DELETE' ? 'selected' : '' ?>>DELETE</option>
+      </select>
       <?php if (has_error('method')): ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php endif; ?>
     </div>
 

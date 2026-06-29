@@ -8,7 +8,19 @@ declare(strict_types=1);
 if (PHP_SAPI === 'cli-server') {
     $staticFile = __DIR__ . parse_url((string)($_SERVER['REQUEST_URI'] ?? '/'), PHP_URL_PATH);
     if ($staticFile !== __FILE__ && is_file($staticFile)) {
-        return false;
+        static $mimes = [
+            'css' => 'text/css', 'js' => 'application/javascript',
+            'png' => 'image/png', 'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg',
+            'gif' => 'image/gif', 'svg' => 'image/svg+xml', 'ico' => 'image/x-icon',
+            'woff' => 'font/woff', 'woff2' => 'font/woff2', 'ttf' => 'font/ttf',
+            'eot' => 'application/vnd.ms-fontobject', 'map' => 'application/json',
+            'json' => 'application/json', 'webp' => 'image/webp',
+        ];
+        $ext = strtolower(pathinfo($staticFile, PATHINFO_EXTENSION));
+        header('Content-Type: ' . ($mimes[$ext] ?? 'application/octet-stream'));
+        header('Cache-Control: public, max-age=86400');
+        readfile($staticFile);
+        exit;
     }
 }
 

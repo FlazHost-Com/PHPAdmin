@@ -33,10 +33,6 @@ $pageUrl = static function (int $p) use ($filter): string {
       <a href="<?= e(route('admin.v1.access.permission.create')) ?>" class="btn btn-success btn-sm">
         <i class="fas fa-fw fa-plus"></i> Add Data
       </a>
-      <a href="<?= e(route('admin.v1.access.permission.sync')) ?>" class="btn btn-info btn-sm"
-         data-confirm="Sync permissions from registered routes?">
-        <i class="fas fa-fw fa-sync"></i> Sync from Routes
-      </a>
       <button type="submit" form="selection"
               formmethod="post"
               formaction="<?= e(route('admin.v1.access.permission.delete_selected')) ?>"
@@ -169,3 +165,7 @@ $pageUrl = static function (int $p) use ($filter): string {
     </div>
   </div>
 </div>
+
+<script>
+  $("#checkall").click(function(){ $('input:checkbox').not(this).prop('checked', this.checked); });
+</script>
