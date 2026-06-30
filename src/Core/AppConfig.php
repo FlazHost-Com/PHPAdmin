@@ -47,8 +47,9 @@ readonly class AppConfig
     public string $mailFromAddress;
     public string $mailFromName;
 
-    // Storage (STORAGE_* — OSS / S3-compatible)
+    // Storage (STORAGE_* — local / OSS / S3-compatible)
     public string $storageDriver;
+    public string $storageBasePath;
     public string $storageAccessKeyId;
     public string $storageSecretAccessKey;
     public string $storageEndpoint;
@@ -107,7 +108,8 @@ readonly class AppConfig
         $this->mailFromName    = $_ENV['MAIL_FROM_NAME']    ?? $this->appName;
 
         // STORAGE_* (standard naming, replaces old AWS_*)
-        $this->storageDriver          = $_ENV['STORAGE_DRIVER']           ?? 'oss';
+        $this->storageDriver          = $_ENV['STORAGE_DRIVER']           ?? 'local';
+        $this->storageBasePath        = rtrim($_ENV['STORAGE_BASE_PATH']  ?? 'storage/uploads', '/');
         $this->storageAccessKeyId     = $_ENV['STORAGE_ACCESS_KEY_ID']    ?? ($_ENV['AWS_KEY']    ?? '');
         $this->storageSecretAccessKey = $_ENV['STORAGE_SECRET_ACCESS_KEY']?? ($_ENV['AWS_SECRET'] ?? '');
         $this->storageEndpoint        = rtrim($_ENV['STORAGE_ENDPOINT']   ?? ($_ENV['AWS_ENDPOINT'] ?? ''), '/');

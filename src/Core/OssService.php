@@ -26,7 +26,9 @@ class OssService
 
     public function isConfigured(): bool
     {
-        return $this->config->storageAccessKeyId !== '' && $this->config->storageBucket !== '';
+        return $this->config->storageDriver !== 'local'
+            && $this->config->storageAccessKeyId !== ''
+            && $this->config->storageBucket !== '';
     }
 
     private function client(): S3Client
