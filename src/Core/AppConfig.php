@@ -30,6 +30,7 @@ readonly class AppConfig
     public string $redisPassword;
 
     // Session & Auth
+    public string $sessionDriver;
     public string $sessionSecret;
     public int    $sessionTtlHours;
     public string $jwtSecret;
@@ -91,6 +92,7 @@ readonly class AppConfig
             $this->redisPassword = $_ENV['REDIS_PASSWORD'] ?? '';
         }
 
+        $this->sessionDriver    = $_ENV['SESSION_DRIVER']    ?? 'redis';
         $this->sessionSecret    = $_ENV['SESSION_SECRET']    ?? '';
         $this->sessionTtlHours  = (int)($_ENV['SESSION_TTL_HOURS'] ?? 6);
         $this->jwtSecret        = $_ENV['JWT_SECRET']        ?? '';

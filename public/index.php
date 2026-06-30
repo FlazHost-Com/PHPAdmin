@@ -41,6 +41,7 @@ use PHPAdmin\Core\ErrorHandler;
 use PHPAdmin\Core\Exceptions\AppException;
 use PHPAdmin\Core\Exceptions\NotFoundAppException;
 use PHPAdmin\Core\Middleware\CsrfMiddleware;
+use PHPAdmin\Core\DatabaseSessionHandler;
 use PHPAdmin\Core\RedisSessionHandler;
 use PHPAdmin\Core\RouteRegistry;
 use Predis\Client as PredisClient;
@@ -75,8 +76,17 @@ try {
 
 // ─── 8. Session setup (full mode only) ───────────────────────────────────────
 if ($config->isFullMode()) {
-    // Use Redis session handler when Redis is configured
-    if ($config->redisHost !== '') {
+    // SESSION_DRIVER=redis  : simpan sesi di Redis (hilang saat Redis restart).
+    // SESSION_DRIVER=database: simpan sesi di tabel `sessions` DB utama (persist).
+    $ttlSec = $config->sessionTtlHours * 3600;
+    if ($config->sessionDriver === 'database') {
+        try {
+            $sessionHandler = new DatabaseSessionHandler(Database::pdo(), $ttlSec);
+            session_set_save_handler($sessionHandler, true);
+        } catch (\Throwable) {
+            // Fall back to native session handler silently
+        }
+    } elseif ($config->redisHost !== '') {
         try {
             $redisOptions = [
                 'scheme' => 'tcp',
@@ -87,7 +97,7 @@ if ($config->isFullMode()) {
                 $redisOptions['password'] = $config->redisPassword;
             }
             $redis          = new PredisClient($redisOptions);
-            $sessionHandler = new RedisSessionHandler($redis);
+            $sessionHandler = new RedisSessionHandler($redis, $ttlSec);
             session_set_save_handler($sessionHandler, true);
         } catch (\Throwable) {
             // Fall back to native session handler silently
