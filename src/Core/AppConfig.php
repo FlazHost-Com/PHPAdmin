@@ -92,7 +92,7 @@ readonly class AppConfig
             $this->redisPassword = $_ENV['REDIS_PASSWORD'] ?? '';
         }
 
-        $this->sessionDriver    = $_ENV['SESSION_DRIVER']    ?? 'redis';
+        $this->sessionDriver    = $_ENV['SESSION_DRIVER']    ?? 'database';
         $this->sessionSecret    = $_ENV['SESSION_SECRET']    ?? '';
         $this->sessionTtlHours  = (int)($_ENV['SESSION_TTL_HOURS'] ?? 6);
         $this->jwtSecret        = $_ENV['JWT_SECRET']        ?? '';
