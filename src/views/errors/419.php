@@ -23,7 +23,7 @@
 <div class="card">
     <h1>419</h1>
     <h2>Session Expired</h2>
-    <p>Your CSRF token has expired or is invalid. Please go back and try again.</p>
+    <p><?= htmlspecialchars($message ?? 'Your CSRF token has expired or is invalid. Please go back and try again.', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') ?></p>
     <a href="javascript:history.back()">Go Back</a>
 </div>
 </body>
