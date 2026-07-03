@@ -15,6 +15,7 @@ use function dirname;
 use function file_put_contents;
 use function str_replace;
 use function var_export;
+use PHPUnit\TextUI\Configuration\Registry as ConfigurationRegistry;
 use SebastianBergmann\Template\InvalidArgumentException;
 use SebastianBergmann\Template\Template;
 
@@ -24,8 +25,6 @@ use SebastianBergmann\Template\Template;
  * @internal This class is not covered by the backward compatibility promise for PHPUnit
  *
  * @see https://qa.php.net/phpt_details.php
- *
- * @phpstan-import-type CoverageFiles from TestCase
  */
 final readonly class Renderer
 {
@@ -51,14 +50,14 @@ final readonly class Renderer
     }
 
     /**
-     * @param non-empty-string $job
-     * @param CoverageFiles    $files
+     * @param non-empty-string                                         $job
+     * @param array{coverage: non-empty-string, job: non-empty-string} $files
      *
      * @param-out non-empty-string $job
      *
      * @throws InvalidArgumentException
      */
-    public function renderForCoverage(string &$job, bool $branchCoverage, bool $pathCoverage, ?string $codeCoverageCacheDirectory, string $bootstrap, array $files): void
+    public function renderForCoverage(string &$job, bool $pathCoverage, ?string $codeCoverageCacheDirectory, array $files): void
     {
         $template = new Template(
             __DIR__ . '/templates/phpt.tpl',
@@ -73,9 +72,7 @@ final readonly class Renderer
         $phar = '\'\'';
 
         if (defined('__PHPUNIT_PHAR__')) {
-            // @codeCoverageIgnoreStart
             $phar = var_export(__PHPUNIT_PHAR__, true);
-            // @codeCoverageIgnoreEnd
         }
 
         if ($codeCoverageCacheDirectory === null) {
@@ -84,16 +81,10 @@ final readonly class Renderer
             $codeCoverageCacheDirectory = "'" . $codeCoverageCacheDirectory . "'";
         }
 
-        if ($branchCoverage) {
-            $branchCoverageValue = 'true';
-        } else {
-            $branchCoverageValue = 'false';
-        }
+        $bootstrap = '';
 
-        if ($pathCoverage) {
-            $pathCoverageValue = 'true';
-        } else {
-            $pathCoverageValue = 'false';
+        if (ConfigurationRegistry::get()->hasBootstrap()) {
+            $bootstrap = ConfigurationRegistry::get()->bootstrap();
         }
 
         $template->setVar(
@@ -103,8 +94,7 @@ final readonly class Renderer
                 'phar'                       => $phar,
                 'job'                        => $files['job'],
                 'coverageFile'               => $files['coverage'],
-                'branchCoverage'             => $branchCoverageValue,
-                'pathCoverage'               => $pathCoverageValue,
+                'driverMethod'               => $pathCoverage ? 'forLineAndPathCoverage' : 'forLineCoverage',
                 'codeCoverageCacheDirectory' => $codeCoverageCacheDirectory,
             ],
         );

@@ -10,11 +10,9 @@
 namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
 /**
- * @phpstan-type LinesType array<positive-int, int>
+ * @phpstan-type LinesType array<int, int>
  *
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final readonly class AnalysisResult
 {
@@ -45,12 +43,7 @@ final readonly class AnalysisResult
     private array $executableLines;
 
     /**
-     * @var array<positive-int, true>
-     */
-    private array $branchOperatorLines;
-
-    /**
-     * @var array<int, int>
+     * @var LinesType
      */
     private array $ignoredLines;
 
@@ -60,19 +53,17 @@ final readonly class AnalysisResult
      * @param array<string, Trait_>     $traits
      * @param array<string, Function_>  $functions
      * @param LinesType                 $executableLines
-     * @param array<positive-int, true> $branchOperatorLines
-     * @param array<int, int>           $ignoredLines
+     * @param LinesType                 $ignoredLines
      */
-    public function __construct(array $interfaces, array $classes, array $traits, array $functions, LinesOfCode $linesOfCode, array $executableLines, array $branchOperatorLines, array $ignoredLines)
+    public function __construct(array $interfaces, array $classes, array $traits, array $functions, LinesOfCode $linesOfCode, array $executableLines, array $ignoredLines)
     {
-        $this->interfaces          = $interfaces;
-        $this->classes             = $classes;
-        $this->traits              = $traits;
-        $this->functions           = $functions;
-        $this->linesOfCode         = $linesOfCode;
-        $this->executableLines     = $executableLines;
-        $this->branchOperatorLines = $branchOperatorLines;
-        $this->ignoredLines        = $ignoredLines;
+        $this->interfaces      = $interfaces;
+        $this->classes         = $classes;
+        $this->traits          = $traits;
+        $this->functions       = $functions;
+        $this->linesOfCode     = $linesOfCode;
+        $this->executableLines = $executableLines;
+        $this->ignoredLines    = $ignoredLines;
     }
 
     /**
@@ -121,15 +112,7 @@ final readonly class AnalysisResult
     }
 
     /**
-     * @return array<positive-int, true>
-     */
-    public function branchOperatorLines(): array
-    {
-        return $this->branchOperatorLines;
-    }
-
-    /**
-     * @return array<int, int>
+     * @return LinesType
      */
     public function ignoredLines(): array
     {

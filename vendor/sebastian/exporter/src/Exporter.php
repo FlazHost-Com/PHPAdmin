@@ -21,24 +21,16 @@ use function ini_set;
 use function is_array;
 use function is_bool;
 use function is_float;
-use function is_infinite;
-use function is_nan;
 use function is_object;
 use function is_resource;
 use function is_string;
 use function mb_strlen;
 use function mb_substr;
-use function ord;
 use function preg_match;
-use function preg_match_all;
-use function preg_replace_callback;
 use function spl_object_id;
 use function sprintf;
-use function str_contains;
 use function str_repeat;
 use function str_replace;
-use function strlen;
-use function strpbrk;
 use function strtr;
 use function var_export;
 use BackedEnum;
@@ -235,12 +227,6 @@ final readonly class Exporter
         // above (fast) mechanism nor with reflection in Zend.
         // Format the output similarly to print_r() in this case
         if ($value instanceof SplObjectStorage) {
-            $key = null;
-
-            if ($value->valid()) {
-                $key = $value->key();
-            }
-
             foreach ($value as $_value) {
                 $array['Object #' . spl_object_id($_value)] = [
                     'obj' => $_value,
@@ -248,9 +234,7 @@ final readonly class Exporter
                 ];
             }
 
-            if ($key !== null) {
-                $value->seek($key);
-            }
+            $value->rewind();
         }
 
         return $array;
@@ -266,10 +250,10 @@ final readonly class Exporter
 
         if (!$value instanceof stdClass) {
             // using ReflectionClass prevents initialization of potential lazy objects
-            return count(new ReflectionClass($value)->getProperties());
+            return count((new ReflectionClass($value))->getProperties());
         }
 
-        return count(new ReflectionObject($value)->getProperties());
+        return count((new ReflectionObject($value))->getProperties());
     }
 
     /**
@@ -415,24 +399,15 @@ final readonly class Exporter
 
     private function exportFloat(float $value): string
     {
-        if (is_nan($value)) {
-            return 'NAN';
-        }
-
-        if (is_infinite($value)) {
-            return $value > 0 ? 'INF' : '-INF';
-        }
-
         $precisionBackup = ini_get('precision');
 
         ini_set('precision', '-1');
 
-        $valueAsString = (string) $value;
+        $valueAsString = @(string) $value;
 
         ini_set('precision', $precisionBackup);
 
-        // Add '.0' only if decimals and scientific notation are absent.
-        if (strpbrk($valueAsString, '.E') === false) {
+        if ((string) @(int) $value === $valueAsString) {
             return $valueAsString . '.0';
         }
 
@@ -442,44 +417,21 @@ final readonly class Exporter
     private function exportString(string $value): string
     {
         // Match for most non-printable chars somewhat taking multibyte chars into account
-        $unprintableCount = preg_match_all('/[^\x09-\x0d\x1b\x20-\xff]/', $value);
-
-        if ($unprintableCount === false || $unprintableCount === 0) {
-            return "'" .
-                strtr(
-                    $value,
-                    [
-                        "\r\n" => '\r\n' . "\n",
-                        "\n\r" => '\n\r' . "\n",
-                        "\r"   => '\r' . "\n",
-                        "\n"   => '\n' . "\n",
-                    ],
-                ) .
-                "'";
-        }
-
-        // A NUL byte or a high ratio of unprintable bytes signals truly
-        // binary data; keep the compact hex dump in those cases.
-        if (str_contains($value, "\x00") || ($unprintableCount / strlen($value)) > 0.3) {
+        if (preg_match('/[^\x09-\x0d\x1b\x20-\xff]/', $value) === 1) {
             return 'Binary String: 0x' . bin2hex($value);
         }
 
-        // Mostly printable: keep printable bytes visible and escape only
-        // the offending ones inline using PHP-style \xNN escapes.
-        return 'Binary String: "' .
-            preg_replace_callback(
-                '/[\x00-\x1f\x7f"\\\\]/',
-                static fn (array $m): string => match ($m[0]) {
-                    "\t"    => '\t',
-                    "\n"    => '\n',
-                    "\r"    => '\r',
-                    '"'     => '\"',
-                    '\\'    => '\\\\',
-                    default => sprintf('\x%02x', ord($m[0])),
-                },
+        return "'" .
+            strtr(
                 $value,
+                [
+                    "\r\n" => '\r\n' . "\n",
+                    "\n\r" => '\n\r' . "\n",
+                    "\r"   => '\r' . "\n",
+                    "\n"   => '\n' . "\n",
+                ],
             ) .
-            '"';
+            "'";
     }
 
     /**

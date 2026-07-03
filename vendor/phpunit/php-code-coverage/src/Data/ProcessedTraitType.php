@@ -11,8 +11,6 @@ namespace SebastianBergmann\CodeCoverage\Data;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final class ProcessedTraitType
 {
@@ -35,12 +33,12 @@ final class ProcessedTraitType
     public int|string $crap;
     public readonly string $link;
 
-    /**
-     * @param array<string, ProcessedMethodType> $methods
-     */
     public function __construct(
         string $traitName,
         string $namespace,
+        /**
+         * @var array<string, ProcessedMethodType>
+         */
         array $methods,
         int $startLine,
         int $executableLines,

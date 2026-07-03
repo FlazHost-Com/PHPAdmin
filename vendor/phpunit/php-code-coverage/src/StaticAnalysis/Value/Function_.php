@@ -11,8 +11,6 @@ namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final readonly class Function_
 {
@@ -28,12 +26,12 @@ final readonly class Function_
     private string $namespace;
 
     /**
-     * @var positive-int
+     * @var non-negative-int
      */
     private int $startLine;
 
     /**
-     * @var positive-int
+     * @var non-negative-int
      */
     private int $endLine;
 
@@ -43,17 +41,17 @@ final readonly class Function_
     private string $signature;
 
     /**
-     * @var non-negative-int
+     * @var positive-int
      */
     private int $cyclomaticComplexity;
 
     /**
      * @param non-empty-string $name
      * @param non-empty-string $namespacedName
-     * @param positive-int     $startLine
-     * @param positive-int     $endLine
+     * @param non-negative-int $startLine
+     * @param non-negative-int $endLine
      * @param non-empty-string $signature
-     * @param non-negative-int $cyclomaticComplexity
+     * @param positive-int     $cyclomaticComplexity
      */
     public function __construct(string $name, string $namespacedName, string $namespace, int $startLine, int $endLine, string $signature, int $cyclomaticComplexity)
     {
@@ -93,7 +91,7 @@ final readonly class Function_
     }
 
     /**
-     * @return positive-int
+     * @return non-negative-int
      */
     public function startLine(): int
     {
@@ -101,7 +99,7 @@ final readonly class Function_
     }
 
     /**
-     * @return positive-int
+     * @return non-negative-int
      */
     public function endLine(): int
     {
@@ -117,7 +115,7 @@ final readonly class Function_
     }
 
     /**
-     * @return non-negative-int
+     * @return positive-int
      */
     public function cyclomaticComplexity(): int
     {

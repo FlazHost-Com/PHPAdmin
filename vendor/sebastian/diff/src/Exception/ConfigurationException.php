@@ -12,18 +12,17 @@ namespace SebastianBergmann\Diff;
 use function gettype;
 use function is_object;
 use function sprintf;
-use InvalidArgumentException;
+use Exception;
 
-final class ConfigurationException extends InvalidArgumentException implements Exception
+final class ConfigurationException extends InvalidArgumentException
 {
-    public function __construct(string $option, string $expected, mixed $value, int $code = 0, ?\Exception $previous = null)
+    public function __construct(string $option, string $expected, mixed $value, int $code = 0, ?Exception $previous = null)
     {
         parent::__construct(
             sprintf(
                 'Option "%s" must be %s, got "%s".',
                 $option,
                 $expected,
-                /** @phpstan-ignore binaryOp.invalid */
                 is_object($value) ? $value::class : (null === $value ? '<null>' : gettype($value) . '#' . $value),
             ),
             $code,

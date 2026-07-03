@@ -11,20 +11,23 @@ namespace SebastianBergmann\CodeCoverage\Node;
 
 use const DIRECTORY_SEPARATOR;
 use function array_shift;
+use function basename;
+use function count;
+use function dirname;
 use function explode;
-use function is_array;
+use function implode;
 use function is_file;
 use function sha1_file;
+use function str_ends_with;
+use function str_replace;
+use function str_starts_with;
 use function substr;
 use SebastianBergmann\CodeCoverage\CodeCoverage;
 use SebastianBergmann\CodeCoverage\Data\ProcessedCodeCoverageData;
 use SebastianBergmann\CodeCoverage\StaticAnalysis\FileAnalyser;
-use SebastianBergmann\CodeCoverage\Util\PathReducer;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  *
  * @phpstan-import-type TestType from CodeCoverage
  */
@@ -37,76 +40,55 @@ final readonly class Builder
         $this->analyser = $analyser;
     }
 
-    /**
-     * @param array<non-empty-string, TestType> $testResults
-     */
-    public function build(ProcessedCodeCoverageData $codeCoverage, array $testResults, string $basePath = ''): Directory
+    public function build(CodeCoverage $coverage): Directory
     {
-        // Clone because path munging is destructive to the original data
-        $codeCoverage = clone $codeCoverage;
-
-        $commonPath = (new PathReducer)->reduce($codeCoverage);
-
-        if ($commonPath === '') {
-            $commonPath = '.';
-        }
-
-        $rootPath = $commonPath;
-
-        if ($basePath !== '') {
-            if ($commonPath === '.') {
-                $rootPath = $basePath;
-            } else {
-                $rootPath = $basePath . DIRECTORY_SEPARATOR . $commonPath;
-            }
-        }
-
-        $root = new Directory($rootPath, null);
+        $data       = clone $coverage->getData(); // clone because path munging is destructive to the original data
+        $commonPath = $this->reducePaths($data);
+        $root       = new Directory(
+            $commonPath,
+            null,
+        );
 
         $this->addItems(
             $root,
-            $this->buildDirectoryStructure($codeCoverage),
-            $testResults,
+            $this->buildDirectoryStructure($data),
+            $coverage->getTests(),
         );
 
         return $root;
     }
 
     /**
-     * @param array<array-key, mixed>           $items
-     * @param array<non-empty-string, TestType> $tests
+     * @param array<string, TestType> $tests
      */
     private function addItems(Directory $root, array $items, array $tests): void
     {
         foreach ($items as $key => $value) {
             $key = (string) $key;
 
-            if ($value instanceof FileCoverageData) {
+            if (str_ends_with($key, '/f')) {
                 $key      = substr($key, 0, -2);
                 $filename = $root->pathAsString() . DIRECTORY_SEPARATOR . $key;
 
-                $sha1 = is_file($filename) ? sha1_file($filename) : false;
-
-                if ($sha1 !== false) {
+                if (is_file($filename)) {
                     $analysisResult = $this->analyser->analyse($filename);
 
                     $root->addFile(
                         new File(
                             $key,
                             $root,
-                            $sha1,
-                            $value->lineCoverage,
-                            $value->functionCoverage,
+                            sha1_file($filename),
+                            $value['lineCoverage'],
+                            $value['functionCoverage'],
                             $tests,
                             $analysisResult->classes(),
                             $analysisResult->traits(),
                             $analysisResult->functions(),
                             $analysisResult->linesOfCode(),
-                            $value->functionCoverage !== [],
                         ),
                     );
                 }
-            } elseif (is_array($value)) {
+            } else {
                 $child = $root->addDirectory($key);
 
                 $this->addItems($child, $value, $tests);
@@ -154,61 +136,144 @@ final readonly class Builder
      * )
      * </code>
      *
-     * @return array<array-key, mixed>
+     * @return array<string, array<string, array{lineCoverage: array<int, int>, functionCoverage: array<string, array<int, int>>}>>
      */
-    private function buildDirectoryStructure(ProcessedCodeCoverageData $codeCoverage): array
+    private function buildDirectoryStructure(ProcessedCodeCoverageData $data): array
     {
         $result = [];
 
-        $lineCoverage     = $codeCoverage->lineCoverage();
-        $functionCoverage = $codeCoverage->functionCoverage();
+        $lineCoverage     = $data->lineCoverage();
+        $functionCoverage = $data->functionCoverage();
 
-        foreach ($codeCoverage->coveredFiles() as $originalPath) {
-            $result = $this->insertIntoDirectoryStructure(
-                $result,
-                explode(DIRECTORY_SEPARATOR, $originalPath),
-                new FileCoverageData(
-                    $lineCoverage[$originalPath] ?? [],
-                    $functionCoverage[$originalPath] ?? [],
-                ),
-            );
+        foreach ($data->coveredFiles() as $originalPath) {
+            $path    = explode(DIRECTORY_SEPARATOR, $originalPath);
+            $pointer = &$result;
+            $max     = count($path);
+
+            for ($i = 0; $i < $max; $i++) {
+                $type = '';
+
+                if ($i === ($max - 1)) {
+                    $type = '/f';
+                }
+
+                $pointer = &$pointer[$path[$i] . $type];
+            }
+
+            $pointer = [
+                'lineCoverage'     => $lineCoverage[$originalPath] ?? [],
+                'functionCoverage' => $functionCoverage[$originalPath] ?? [],
+            ];
         }
 
         return $result;
     }
 
     /**
-     * @param array<array-key, mixed> $structure
-     * @param list<string>            $path
+     * Reduces the paths by cutting the longest common start path.
      *
-     * @return array<array-key, mixed>
+     * For instance,
+     *
+     * <code>
+     * Array
+     * (
+     *     [/home/sb/Money/Money.php] => Array
+     *         (
+     *             ...
+     *         )
+     *
+     *     [/home/sb/Money/MoneyBag.php] => Array
+     *         (
+     *             ...
+     *         )
+     * )
+     * </code>
+     *
+     * is reduced to
+     *
+     * <code>
+     * Array
+     * (
+     *     [Money.php] => Array
+     *         (
+     *             ...
+     *         )
+     *
+     *     [MoneyBag.php] => Array
+     *         (
+     *             ...
+     *         )
+     * )
+     * </code>
      */
-    private function insertIntoDirectoryStructure(array $structure, array $path, FileCoverageData $leaf): array
+    private function reducePaths(ProcessedCodeCoverageData $coverage): string
     {
-        $segment = array_shift($path);
+        $coveredFiles = $coverage->coveredFiles();
 
-        if ($segment === null) {
-            // @codeCoverageIgnoreStart
-            return $structure;
-            // @codeCoverageIgnoreEnd
+        if ($coveredFiles === []) {
+            return '.';
         }
 
-        if ($path === []) {
-            $structure[$segment . '/f'] = $leaf;
+        $commonPath = '';
+        $paths      = $coveredFiles;
 
-            return $structure;
+        if (count($paths) === 1) {
+            $commonPath = dirname($paths[0]) . DIRECTORY_SEPARATOR;
+            $coverage->renameFile($paths[0], basename($paths[0]));
+
+            return $commonPath;
         }
 
-        $child = $structure[$segment] ?? [];
+        $max = count($paths);
 
-        if (!is_array($child)) {
-            // @codeCoverageIgnoreStart
-            $child = [];
-            // @codeCoverageIgnoreEnd
+        for ($i = 0; $i < $max; $i++) {
+            // strip phar:// prefixes
+            if (str_starts_with($paths[$i], 'phar://')) {
+                $paths[$i] = substr($paths[$i], 7);
+                $paths[$i] = str_replace('/', DIRECTORY_SEPARATOR, $paths[$i]);
+            }
+
+            $paths[$i] = explode(DIRECTORY_SEPARATOR, $paths[$i]);
+
+            if ($paths[$i][0] === '') {
+                $paths[$i][0] = DIRECTORY_SEPARATOR;
+            }
         }
 
-        $structure[$segment] = $this->insertIntoDirectoryStructure($child, $path, $leaf);
+        $done = false;
+        $max  = count($paths);
 
-        return $structure;
+        while (!$done) {
+            for ($i = 0; $i < $max - 1; $i++) {
+                if (!isset($paths[$i][0]) ||
+                    !isset($paths[$i + 1][0]) ||
+                    $paths[$i][0] !== $paths[$i + 1][0]) {
+                    $done = true;
+
+                    break;
+                }
+            }
+
+            if (!$done) {
+                $commonPath .= $paths[0][0];
+
+                if ($paths[0][0] !== DIRECTORY_SEPARATOR) {
+                    $commonPath .= DIRECTORY_SEPARATOR;
+                }
+
+                for ($i = 0; $i < $max; $i++) {
+                    array_shift($paths[$i]);
+                }
+            }
+        }
+
+        $original = $coveredFiles;
+        $max      = count($original);
+
+        for ($i = 0; $i < $max; $i++) {
+            $coverage->renameFile($original[$i], implode(DIRECTORY_SEPARATOR, $paths[$i]));
+        }
+
+        return substr($commonPath, 0, -1);
     }
 }

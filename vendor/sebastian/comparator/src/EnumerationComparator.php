@@ -50,7 +50,6 @@ final class EnumerationComparator extends Comparator
                 $actual->name,
                 $expected->name,
             ),
-            $this->contextLines(),
         );
     }
 }

@@ -9,16 +9,11 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use const DIRECTORY_SEPARATOR;
-use function array_values;
 use function file_get_contents;
 use function file_put_contents;
 use function is_array;
-use function is_string;
-use function preg_match;
 use function realpath;
 use function serialize;
-use function str_replace;
 use function unserialize;
 use SebastianBergmann\FileIterator\Facade as FileIteratorFacade;
 use SplObjectStorage;
@@ -59,21 +54,12 @@ final class SourceMapper
             return;
         }
 
-        $validated = [];
-
-        foreach ($map as $file => $included) {
-            if (!is_string($file) || $file === '' || $included !== true) {
-                return;
-            }
-
-            $validated[$file] = true;
-        }
-
         if (self::$files === null) {
             self::$files = new SplObjectStorage;
         }
 
-        self::$files[$source] = $validated;
+        /** @phpstan-ignore offsetAssign.valueType */
+        self::$files[$source] = $map;
     }
 
     /**
@@ -93,19 +79,11 @@ final class SourceMapper
 
         $directories = $this->aggregateDirectories($source->includeDirectories());
 
-        foreach ($directories as ['path' => $path, 'prefixes' => $prefixes, 'suffixes' => $suffixes]) {
-            $basePath = realpath($path);
-
+        foreach ($directories as $path => [$prefixes, $suffixes]) {
             foreach ((new FileIteratorFacade)->getFilesAsArray($path, $suffixes, $prefixes) as $file) {
                 $file = realpath($file);
 
-                // @codeCoverageIgnoreStart
-                if ($file === false) {
-                    continue;
-                }
-                // @codeCoverageIgnoreEnd
-
-                if ($this->isInHiddenDirectory($file, $basePath)) {
+                if (!$file) {
                     continue;
                 }
 
@@ -116,7 +94,7 @@ final class SourceMapper
         foreach ($source->includeFiles() as $file) {
             $file = realpath($file->path());
 
-            if ($file === false) {
+            if (!$file) {
                 continue;
             }
 
@@ -125,15 +103,13 @@ final class SourceMapper
 
         $directories = $this->aggregateDirectories($source->excludeDirectories());
 
-        foreach ($directories as ['path' => $path, 'prefixes' => $prefixes, 'suffixes' => $suffixes]) {
+        foreach ($directories as $path => [$prefixes, $suffixes]) {
             foreach ((new FileIteratorFacade)->getFilesAsArray($path, $suffixes, $prefixes) as $file) {
                 $file = realpath($file);
 
-                // @codeCoverageIgnoreStart
-                if ($file === false) {
+                if (!$file) {
                     continue;
                 }
-                // @codeCoverageIgnoreEnd
 
                 if (!isset($files[$file])) {
                     continue;
@@ -146,7 +122,7 @@ final class SourceMapper
         foreach ($source->excludeFiles() as $file) {
             $file = realpath($file->path());
 
-            if ($file === false) {
+            if (!$file) {
                 continue;
             }
 
@@ -163,87 +139,33 @@ final class SourceMapper
     }
 
     /**
-     * @return array<non-empty-string, true>
-     */
-    public function mapForCodeCoverage(Source $source): array
-    {
-        $files = $this->map($source);
-
-        foreach ($source->includeDirectories() as $directory) {
-            if ($directory->includeInCodeCoverage()) {
-                continue;
-            }
-
-            foreach ((new FileIteratorFacade)->getFilesAsArray($directory->path(), $directory->suffix(), $directory->prefix()) as $file) {
-                $file = realpath($file);
-
-                // @codeCoverageIgnoreStart
-                if ($file === false) {
-                    continue;
-                }
-                // @codeCoverageIgnoreEnd
-
-                unset($files[$file]);
-            }
-        }
-
-        foreach ($source->includeFiles() as $file) {
-            if ($file->includeInCodeCoverage()) {
-                continue;
-            }
-
-            $path = realpath($file->path());
-
-            if ($path === false) {
-                continue;
-            }
-
-            unset($files[$path]);
-        }
-
-        return $files;
-    }
-
-    private function isInHiddenDirectory(string $path, false|string $basePath): bool
-    {
-        $relativePath = str_replace((string) $basePath, '', $path);
-
-        $separator = DIRECTORY_SEPARATOR === '\\' ? '\\\\' : '/';
-
-        return preg_match('=' . $separator . '\.[^' . $separator . ']*' . $separator . '=', $relativePath) === 1;
-    }
-
-    /**
-     * @return list<array{path: non-empty-string, prefixes: list<non-empty-string>, suffixes: list<non-empty-string>}>
+     * @return array<string,array{list<string>,list<string>}>
      */
     private function aggregateDirectories(FilterDirectoryCollection $directories): array
     {
         $aggregated = [];
 
         foreach ($directories as $directory) {
-            $path = $directory->path();
-
-            if (!isset($aggregated[$path])) {
-                $aggregated[$path] = [
-                    'path'     => $path,
-                    'prefixes' => [],
-                    'suffixes' => [],
+            if (!isset($aggregated[$directory->path()])) {
+                $aggregated[$directory->path()] = [
+                    0 => [],
+                    1 => [],
                 ];
             }
 
             $prefix = $directory->prefix();
 
             if ($prefix !== '') {
-                $aggregated[$path]['prefixes'][] = $prefix;
+                $aggregated[$directory->path()][0][] = $prefix;
             }
 
             $suffix = $directory->suffix();
 
             if ($suffix !== '') {
-                $aggregated[$path]['suffixes'][] = $suffix;
+                $aggregated[$directory->path()][1][] = $suffix;
             }
         }
 
-        return array_values($aggregated);
+        return $aggregated;
     }
 }

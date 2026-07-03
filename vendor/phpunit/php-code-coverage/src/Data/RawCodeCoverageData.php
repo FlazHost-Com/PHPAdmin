@@ -32,8 +32,6 @@ use SebastianBergmann\CodeCoverage\StaticAnalysis\FileAnalyser;
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
  * @phpstan-import-type XdebugFunctionsCoverageType from XdebugDriver
  * @phpstan-import-type XdebugCodeCoverageWithoutPathCoverageType from XdebugDriver
  * @phpstan-import-type XdebugCodeCoverageWithPathCoverageType from XdebugDriver
@@ -51,7 +49,7 @@ final class RawCodeCoverageData
     private array $lineCoverage;
 
     /**
-     * @var array<non-empty-string, XdebugFunctionsCoverageType>
+     * @var array<string, XdebugFunctionsCoverageType>
      */
     private array $functionCoverage;
 
@@ -75,14 +73,8 @@ final class RawCodeCoverageData
             // Xdebug annotates the function name of traits, strip that off
             foreach ($fileCoverageData['functions'] as $existingKey => $data) {
                 if (str_ends_with($existingKey, '}') && !str_starts_with($existingKey, '{')) { // don't want to catch {main}
-                    $newKey = preg_replace('/\{.*}$/', '', $existingKey);
-
-                    if ($newKey === null) {
-                        continue;
-                    }
-
+                    $newKey                                 = preg_replace('/\{.*}$/', '', $existingKey);
                     $fileCoverageData['functions'][$newKey] = $data;
-
                     unset($fileCoverageData['functions'][$existingKey]);
                 }
             }
@@ -94,18 +86,6 @@ final class RawCodeCoverageData
         return new self($lineCoverage, $functionCoverage);
     }
 
-    /**
-     * @param XdebugCodeCoverageWithoutPathCoverageType            $lineCoverage
-     * @param array<non-empty-string, XdebugFunctionsCoverageType> $functionCoverage
-     */
-    public static function fromLineAndBranchCoverage(array $lineCoverage, array $functionCoverage): self
-    {
-        return new self($lineCoverage, $functionCoverage);
-    }
-
-    /**
-     * @param non-empty-string $filename
-     */
     public static function fromUncoveredFile(string $filename, FileAnalyser $analyser): self
     {
         $lineCoverage = array_map(
@@ -117,8 +97,8 @@ final class RawCodeCoverageData
     }
 
     /**
-     * @param XdebugCodeCoverageWithoutPathCoverageType            $lineCoverage
-     * @param array<non-empty-string, XdebugFunctionsCoverageType> $functionCoverage
+     * @param XdebugCodeCoverageWithoutPathCoverageType  $lineCoverage
+     * @param array<string, XdebugFunctionsCoverageType> $functionCoverage
      */
     private function __construct(array $lineCoverage, array $functionCoverage)
     {
@@ -140,7 +120,7 @@ final class RawCodeCoverageData
     }
 
     /**
-     * @return array<non-empty-string, XdebugFunctionsCoverageType>
+     * @return array<string, XdebugFunctionsCoverageType>
      */
     public function functionCoverage(): array
     {
@@ -168,25 +148,7 @@ final class RawCodeCoverageData
     }
 
     /**
-     * @param non-empty-string   $filename
-     * @param list<positive-int> $lines
-     */
-    public function addMissingExecutableLines(string $filename, array $lines): void
-    {
-        if (!isset($this->lineCoverage[$filename])) {
-            return;
-        }
-
-        foreach ($lines as $line) {
-            if (!isset($this->lineCoverage[$filename][$line])) {
-                $this->lineCoverage[$filename][$line] = Driver::LINE_NOT_EXECUTED;
-            }
-        }
-    }
-
-    /**
-     * @param non-empty-string         $filename
-     * @param array<positive-int, int> $linesToBranchMap
+     * @param int[] $linesToBranchMap
      */
     public function markExecutableLineByBranch(string $filename, array $linesToBranchMap): void
     {
@@ -305,10 +267,8 @@ final class RawCodeCoverageData
         if (!isset(self::$emptyLineCache[$filename])) {
             self::$emptyLineCache[$filename] = [];
 
-            $sourceCode = is_file($filename) ? file_get_contents($filename) : false;
-
-            if ($sourceCode !== false) {
-                $sourceLines = explode("\n", $sourceCode);
+            if (is_file($filename)) {
+                $sourceLines = explode("\n", file_get_contents($filename));
 
                 foreach ($sourceLines as $line => $source) {
                     if (trim($source) === '') {

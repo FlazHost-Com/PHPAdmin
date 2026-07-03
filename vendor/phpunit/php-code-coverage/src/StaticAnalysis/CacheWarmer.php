@@ -14,14 +14,10 @@ use SebastianBergmann\CodeCoverage\Filter;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final readonly class CacheWarmer
 {
     /**
-     * @param non-empty-string $cacheDirectory
-     *
      * @return array{cacheHits: non-negative-int, cacheMisses: non-negative-int}
      */
     public function warmCache(string $cacheDirectory, bool $useAnnotationsForIgnoringCode, bool $ignoreDeprecatedCode, Filter $filter): array
@@ -32,17 +28,9 @@ final readonly class CacheWarmer
         );
 
         foreach ($filter->files() as $file) {
-            $sourceCode = file_get_contents($file);
-
-            if ($sourceCode === false) {
-                // @codeCoverageIgnoreStart
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-
             $analyser->analyse(
                 $file,
-                $sourceCode,
+                file_get_contents($file),
                 $useAnnotationsForIgnoringCode,
                 $ignoreDeprecatedCode,
             );

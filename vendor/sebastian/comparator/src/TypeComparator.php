@@ -42,7 +42,6 @@ final class TypeComparator extends Comparator
                     (new Exporter)->shortenedExport($actual),
                     gettype($expected),
                 ),
-                $this->contextLines(),
             );
         }
     }

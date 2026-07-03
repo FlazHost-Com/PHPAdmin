@@ -11,23 +11,20 @@ namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
 use function assert;
 use function implode;
-use function is_string;
-use function max;
-use function strlen;
-use function substr;
+use function rtrim;
+use function trim;
 use PhpParser\Node;
 use PhpParser\Node\ComplexType;
-use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
-use PhpParser\Node\Stmt\Class_ as PhpParserClass_;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Enum_ as PhpParserEnum;
-use PhpParser\Node\Stmt\Function_ as PhpParserFunction_;
-use PhpParser\Node\Stmt\Interface_ as PhpParserInterface_;
-use PhpParser\Node\Stmt\Trait_ as PhpParserTrait_;
+use PhpParser\Node\Stmt\Enum_;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\Interface_;
+use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\UnionType;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitorAbstract;
@@ -35,8 +32,6 @@ use SebastianBergmann\Complexity\CyclomaticComplexityCalculatingVisitor;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final class CodeUnitFindingVisitor extends NodeVisitorAbstract
 {
@@ -46,22 +41,22 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     private string $file;
 
     /**
-     * @var array<string, Interface_>
+     * @var array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Interface_>
      */
     private array $interfaces = [];
 
     /**
-     * @var array<string, Class_>
+     * @var array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Class_>
      */
     private array $classes = [];
 
     /**
-     * @var array<string, Trait_>
+     * @var array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Trait_>
      */
     private array $traits = [];
 
     /**
-     * @var array<string, Function_>
+     * @var array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Function_>
      */
     private array $functions = [];
 
@@ -75,60 +70,64 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
 
     public function enterNode(Node $node): null
     {
-        if ($node instanceof PhpParserInterface_) {
+        if ($node instanceof Interface_) {
             $this->processInterface($node);
-
-            return null;
         }
 
-        if ($node instanceof PhpParserClass_ && !$node->isAnonymous()) {
+        if ($node instanceof Class_) {
+            if ($node->isAnonymous()) {
+                return null;
+            }
+
             $this->processClass($node);
-
-            return null;
         }
 
-        if ($node instanceof PhpParserEnum) {
+        if ($node instanceof Enum_) {
             $this->processClass($node);
-
-            return null;
         }
 
-        if ($node instanceof PhpParserTrait_) {
+        if ($node instanceof Trait_) {
             $this->processTrait($node);
+        }
 
+        if (!$node instanceof Function_) {
             return null;
         }
 
-        if ($node instanceof PhpParserFunction_) {
-            $this->processFunction($node);
-        }
+        $this->processFunction($node);
 
         return null;
     }
 
     public function leaveNode(Node $node): null
     {
-        if ($node instanceof PhpParserClass_ && $node->isAnonymous()) {
+        if ($node instanceof Class_ && $node->isAnonymous()) {
             return null;
         }
 
-        if (!$node instanceof PhpParserClass_ && !$node instanceof PhpParserEnum && !$node instanceof PhpParserTrait_) {
+        if (!$node instanceof Class_ && !$node instanceof Enum_ && !$node instanceof Trait_) {
             return null;
         }
 
-        $traits = $this->traitUses($node);
+        $traits = [];
+
+        foreach ($node->getTraitUses() as $traitUse) {
+            foreach ($traitUse->traits as $trait) {
+                $traits[] = $trait->toString();
+            }
+        }
 
         if ($traits === []) {
             return null;
         }
 
-        $this->setTraits($node, $traits);
+        $this->postProcessClassOrTrait($node, $traits);
 
         return null;
     }
 
     /**
-     * @return array<string, Interface_>
+     * @return array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Interface_>
      */
     public function interfaces(): array
     {
@@ -136,7 +135,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @return array<string, Class_>
+     * @return array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Class_>
      */
     public function classes(): array
     {
@@ -144,7 +143,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @return array<string, Trait_>
+     * @return array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Trait_>
      */
     public function traits(): array
     {
@@ -152,17 +151,14 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @return array<string, Function_>
+     * @return array<string, \SebastianBergmann\CodeCoverage\StaticAnalysis\Function_>
      */
     public function functions(): array
     {
         return $this->functions;
     }
 
-    /**
-     * @return non-negative-int
-     */
-    private function cyclomaticComplexity(ClassMethod|PhpParserFunction_ $node): int
+    private function cyclomaticComplexity(ClassMethod|Function_ $node): int
     {
         $nodes = $node->getStmts();
 
@@ -182,20 +178,13 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         return $cyclomaticComplexityCalculatingVisitor->cyclomaticComplexity();
     }
 
-    /**
-     * @return non-empty-string
-     */
-    private function signature(ClassMethod|PhpParserFunction_ $node): string
+    private function signature(ClassMethod|Function_ $node): string
     {
         $signature  = ($node->returnsByRef() ? '&' : '') . $node->name->toString() . '(';
         $parameters = [];
 
         foreach ($node->getParams() as $parameter) {
-            $variable = $parameter->var;
-
-            if (!$variable instanceof Variable || !is_string($variable->name)) {
-                continue; // @codeCoverageIgnore
-            }
+            assert(isset($parameter->var->name));
 
             $parameterAsString = '';
 
@@ -203,7 +192,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
                 $parameterAsString = $this->type($parameter->type) . ' ';
             }
 
-            $parameterAsString .= '$' . $variable->name;
+            $parameterAsString .= '$' . $parameter->var->name;
 
             /* @todo Handle default values */
 
@@ -235,13 +224,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
             return $this->intersectionTypeAsString($type);
         }
 
-        if ($type instanceof Identifier || $type instanceof Name) {
-            return $type->toString();
-        }
-
-        // @codeCoverageIgnoreStart
-        return '';
-        // @codeCoverageIgnoreEnd
+        return $type->toString();
     }
 
     private function visibility(ClassMethod $node): Visibility
@@ -257,12 +240,8 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         return Visibility::Public;
     }
 
-    private function processInterface(PhpParserInterface_ $node): void
+    private function processInterface(Interface_ $node): void
     {
-        assert(isset($node->name));
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
         $name             = $node->name->toString();
         $namespacedName   = $node->namespacedName->toString();
         $parentInterfaces = [];
@@ -271,28 +250,24 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
             $parentInterfaces[] = $parentInterface->toString();
         }
 
-        $this->interfaces[$namespacedName] = new Interface_(
+        $this->interfaces[$namespacedName] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Interface_(
             $name,
             $namespacedName,
             $this->namespace($namespacedName, $name),
-            $this->startLine($node),
-            $this->endLine($node),
+            $node->getStartLine(),
+            $node->getEndLine(),
             $parentInterfaces,
         );
     }
 
-    private function processClass(PhpParserClass_|PhpParserEnum $node): void
+    private function processClass(Class_|Enum_ $node): void
     {
-        assert(isset($node->name));
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
         $name           = $node->name->toString();
         $namespacedName = $node->namespacedName->toString();
         $parentClass    = null;
         $interfaces     = [];
 
-        if (!$node instanceof PhpParserEnum) {
+        if (!$node instanceof Enum_) {
             if ($node->extends instanceof Name) {
                 $parentClass = $node->extends->toString();
             }
@@ -302,13 +277,13 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
             }
         }
 
-        $this->classes[$namespacedName] = new Class_(
+        $this->classes[$namespacedName] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Class_(
             $name,
             $namespacedName,
             $this->namespace($namespacedName, $name),
             $this->file,
-            $this->startLine($node),
-            $this->endLine($node),
+            $node->getStartLine(),
+            $node->getEndLine(),
             $parentClass,
             $interfaces,
             [],
@@ -316,41 +291,21 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         );
     }
 
-    private function processTrait(PhpParserTrait_ $node): void
+    private function processTrait(Trait_ $node): void
     {
-        assert(isset($node->name));
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
         $name           = $node->name->toString();
         $namespacedName = $node->namespacedName->toString();
 
-        $this->traits[$namespacedName] = new Trait_(
+        $this->traits[$namespacedName] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Trait_(
             $name,
             $namespacedName,
             $this->namespace($namespacedName, $name),
             $this->file,
-            $this->startLine($node),
-            $this->endLine($node),
+            $node->getStartLine(),
+            $node->getEndLine(),
             [],
             $this->processMethods($node->getMethods()),
         );
-    }
-
-    /**
-     * @return list<non-empty-string>
-     */
-    private function traitUses(PhpParserClass_|PhpParserEnum|PhpParserTrait_ $node): array
-    {
-        $traits = [];
-
-        foreach ($node->getTraitUses() as $traitUse) {
-            foreach ($traitUse->traits as $trait) {
-                $traits[] = $trait->toString();
-            }
-        }
-
-        return $traits;
     }
 
     /**
@@ -365,8 +320,8 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         foreach ($nodes as $node) {
             $methods[$node->name->toString()] = new Method(
                 $node->name->toString(),
-                $this->startLine($node),
-                $this->endLine($node),
+                $node->getStartLine(),
+                $node->getEndLine(),
                 $this->signature($node),
                 $this->visibility($node),
                 $this->cyclomaticComplexity($node),
@@ -376,7 +331,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         return $methods;
     }
 
-    private function processFunction(PhpParserFunction_ $node): void
+    private function processFunction(Function_ $node): void
     {
         assert(isset($node->name));
         assert(isset($node->namespacedName));
@@ -385,42 +340,20 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
         $name           = $node->name->toString();
         $namespacedName = $node->namespacedName->toString();
 
-        $this->functions[$namespacedName] = new Function_(
+        $this->functions[$namespacedName] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Function_(
             $name,
             $namespacedName,
             $this->namespace($namespacedName, $name),
-            $this->startLine($node),
-            $this->endLine($node),
+            $node->getStartLine(),
+            $node->getEndLine(),
             $this->signature($node),
             $this->cyclomaticComplexity($node),
         );
     }
 
-    /**
-     * @return positive-int
-     */
-    private function startLine(ClassMethod|PhpParserClass_|PhpParserEnum|PhpParserFunction_|PhpParserInterface_|PhpParserTrait_ $node): int
-    {
-        assert(isset($node->name));
-
-        return max(1, $node->name->getStartLine());
-    }
-
-    /**
-     * @return positive-int
-     */
-    private function endLine(ClassMethod|PhpParserClass_|PhpParserEnum|PhpParserFunction_|PhpParserInterface_|PhpParserTrait_ $node): int
-    {
-        return max(1, $node->getEndLine());
-    }
-
     private function namespace(string $namespacedName, string $name): string
     {
-        if ($namespacedName === $name) {
-            return '';
-        }
-
-        return substr($namespacedName, 0, -strlen($name) - 1);
+        return trim(rtrim($namespacedName, $name), '\\');
     }
 
     private function unionTypeAsString(UnionType $node): string
@@ -463,17 +396,14 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
     /**
      * @param list<non-empty-string> $traits
      */
-    private function setTraits(PhpParserClass_|PhpParserEnum|PhpParserTrait_ $node, array $traits): void
+    private function postProcessClassOrTrait(Class_|Enum_|Trait_ $node, array $traits): void
     {
-        assert(isset($node->namespacedName));
-        assert($node->namespacedName instanceof Name);
-
         $name = $node->namespacedName->toString();
 
-        if ($node instanceof PhpParserClass_ || $node instanceof PhpParserEnum) {
+        if ($node instanceof Class_ || $node instanceof Enum_) {
             assert(isset($this->classes[$name]));
 
-            $this->classes[$name] = new Class_(
+            $this->classes[$name] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Class_(
                 $this->classes[$name]->name(),
                 $this->classes[$name]->namespacedName(),
                 $this->classes[$name]->namespace(),
@@ -491,7 +421,7 @@ final class CodeUnitFindingVisitor extends NodeVisitorAbstract
 
         assert(isset($this->traits[$name]));
 
-        $this->traits[$name] = new Trait_(
+        $this->traits[$name] = new \SebastianBergmann\CodeCoverage\StaticAnalysis\Trait_(
             $this->traits[$name]->name(),
             $this->traits[$name]->namespacedName(),
             $this->traits[$name]->namespace(),

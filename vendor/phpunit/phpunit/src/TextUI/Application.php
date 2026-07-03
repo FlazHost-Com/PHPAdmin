@@ -11,22 +11,14 @@ namespace PHPUnit\TextUI;
 
 use const PHP_EOL;
 use const PHP_VERSION;
-use const SIGINT;
-use function array_reverse;
 use function assert;
 use function class_exists;
-use function count;
 use function defined;
 use function dirname;
 use function explode;
 use function function_exists;
-use function getmypid;
-use function is_array;
 use function is_file;
-use function is_string;
 use function method_exists;
-use function pcntl_async_signals;
-use function pcntl_signal;
 use function printf;
 use function realpath;
 use function sprintf;
@@ -57,10 +49,9 @@ use PHPUnit\Runner\DeprecationCollector\Facade as DeprecationCollector;
 use PHPUnit\Runner\DirectoryDoesNotExistException;
 use PHPUnit\Runner\ErrorHandler;
 use PHPUnit\Runner\Extension\ExtensionBootstrapper;
-use PHPUnit\Runner\Extension\ExtensionFacade;
+use PHPUnit\Runner\Extension\Facade as ExtensionFacade;
 use PHPUnit\Runner\Extension\PharLoader;
 use PHPUnit\Runner\GarbageCollection\GarbageCollectionHandler;
-use PHPUnit\Runner\IssueTriggerResolver\Resolver;
 use PHPUnit\Runner\Phpt\TestCase as PhptTestCase;
 use PHPUnit\Runner\ResultCache\DefaultResultCache;
 use PHPUnit\Runner\ResultCache\NullResultCache;
@@ -79,7 +70,6 @@ use PHPUnit\TextUI\Command\CheckPhpConfigurationCommand;
 use PHPUnit\TextUI\Command\GenerateConfigurationCommand;
 use PHPUnit\TextUI\Command\ListGroupsCommand;
 use PHPUnit\TextUI\Command\ListTestFilesCommand;
-use PHPUnit\TextUI\Command\ListTestIdsCommand;
 use PHPUnit\TextUI\Command\ListTestsAsTextCommand;
 use PHPUnit\TextUI\Command\ListTestsAsXmlCommand;
 use PHPUnit\TextUI\Command\ListTestSuitesCommand;
@@ -87,7 +77,6 @@ use PHPUnit\TextUI\Command\MigrateConfigurationCommand;
 use PHPUnit\TextUI\Command\Result;
 use PHPUnit\TextUI\Command\ShowHelpCommand;
 use PHPUnit\TextUI\Command\ShowVersionCommand;
-use PHPUnit\TextUI\Command\ValidateConfigurationCommand;
 use PHPUnit\TextUI\Command\VersionCheckCommand;
 use PHPUnit\TextUI\Command\WarmCodeCoverageCacheCommand;
 use PHPUnit\TextUI\Configuration\BootstrapLoader;
@@ -104,7 +93,6 @@ use PHPUnit\TextUI\Output\Printer;
 use PHPUnit\TextUI\XmlConfiguration\Configuration as XmlConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\DefaultConfiguration;
 use PHPUnit\TextUI\XmlConfiguration\Loader;
-use PHPUnit\Util\DifferBuilder;
 use PHPUnit\Util\Http\PhpDownloader;
 use SebastianBergmann\Timer\Timer;
 use Throwable;
@@ -137,8 +125,6 @@ final readonly class Application
                 $cliConfiguration,
                 $xmlConfiguration,
             );
-
-            DifferBuilder::configureComparatorFactory();
 
             (new PhpHandler)->handle($configuration->php());
 
@@ -205,20 +191,11 @@ final readonly class Application
 
             EventFacade::instance()->seal();
 
-            ErrorHandler::instance()->registerForNonTestCaseContext();
+            ErrorHandler::instance()->registerDeprecationHandler();
 
             $testSuite = $this->buildTestSuite($configuration);
 
-            if ($configuration->hasTestIdFilterFile() && !is_file($configuration->testIdFilterFile())) {
-                $this->exitWithErrorMessage(
-                    sprintf(
-                        'Test ID filter file "%s" not found',
-                        $configuration->testIdFilterFile(),
-                    ),
-                );
-            }
-
-            ErrorHandler::instance()->restoreForNonTestCaseContext();
+            ErrorHandler::instance()->restoreDeprecationHandler();
 
             $this->executeCommandsThatRequireTheTestSuite($configuration, $cliConfiguration, $testSuite);
 
@@ -241,8 +218,6 @@ final readonly class Application
             }
 
             $this->configureDeprecationTriggers($configuration);
-            $this->configureIssueTriggerResolvers($configuration);
-            $this->registerInterruptHandler();
 
             $timer = new Timer;
             $timer->start();
@@ -302,18 +277,6 @@ final readonly class Application
 
             $result = TestResultFacade::result();
 
-            if (TestResultFacade::wasInterrupted()) {
-                if (!$extensionReplacesResultOutput && !$configuration->debug()) {
-                    $printer->print(PHP_EOL . PHP_EOL);
-                }
-
-                $printer->print('Test execution was interrupted by a signal.');
-
-                if ($extensionReplacesResultOutput || $configuration->debug()) {
-                    $printer->print(PHP_EOL);
-                }
-            }
-
             if (!$extensionReplacesResultOutput && !$configuration->debug()) {
                 OutputFacade::printResult(
                     $result,
@@ -323,22 +286,20 @@ final readonly class Application
                 );
             }
 
-            if (!TestResultFacade::wasInterrupted()) {
-                CodeCoverage::instance()->generateReports($printer, $configuration);
+            CodeCoverage::instance()->generateReports($printer, $configuration);
 
-                if (isset($baselineGenerator)) {
-                    (new Writer)->write(
-                        $configuration->generateBaseline(),
-                        $baselineGenerator->baseline(),
-                    );
+            if (isset($baselineGenerator)) {
+                (new Writer)->write(
+                    $configuration->generateBaseline(),
+                    $baselineGenerator->baseline(),
+                );
 
-                    $printer->print(
-                        sprintf(
-                            PHP_EOL . 'Baseline written to %s.' . PHP_EOL,
-                            realpath($configuration->generateBaseline()),
-                        ),
-                    );
-                }
+                $printer->print(
+                    sprintf(
+                        PHP_EOL . 'Baseline written to %s.' . PHP_EOL,
+                        realpath($configuration->generateBaseline()),
+                    ),
+                );
             }
 
             $shellExitCode = (new ShellExitCodeCalculator)->calculate(
@@ -469,27 +430,7 @@ final readonly class Application
                 $this->exitWithErrorMessage('No configuration file found to migrate');
             }
 
-            $resolved = realpath($configurationFile);
-
-            if ($resolved === false) {
-                $this->exitWithErrorMessage('Configuration file cannot be migrated');
-            }
-
-            $this->execute(new MigrateConfigurationCommand($resolved));
-        }
-
-        if ($cliConfiguration->validateConfiguration()) {
-            if ($configurationFile === false) {
-                $this->exitWithErrorMessage('No configuration file found to validate');
-            }
-
-            $resolved = realpath($configurationFile);
-
-            if ($resolved === false) {
-                $this->exitWithErrorMessage('Configuration file cannot be validated');
-            }
-
-            $this->execute(new ValidateConfigurationCommand($resolved));
+            $this->execute(new MigrateConfigurationCommand(realpath($configurationFile)));
         }
 
         if ($cliConfiguration->hasAtLeastVersion()) {
@@ -529,18 +470,6 @@ final readonly class Application
         if ($cliConfiguration->listGroups()) {
             $this->execute(
                 new ListGroupsCommand(
-                    $this->filteredTests(
-                        $configuration,
-                        $testSuite,
-                    ),
-                ),
-                true,
-            );
-        }
-
-        if ($cliConfiguration->listTestIds()) {
-            $this->execute(
-                new ListTestIdsCommand(
                     $this->filteredTests(
                         $configuration,
                         $testSuite,
@@ -659,16 +588,12 @@ final readonly class Application
             EventFacade::instance()->registerTracer(
                 new EventLogger(
                     $configuration->logEventsText(),
-                    $configuration->withTelemetry(),
+                    false,
                 ),
             );
         }
 
         if ($configuration->hasLogEventsVerboseText()) {
-            EventFacade::emitter()->testRunnerTriggeredPhpunitDeprecation(
-                'The "--log-events-verbose-text <file>" CLI option is deprecated and will be removed in PHPUnit 14. Use "--log-events-text <file> --with-telemetry" instead.',
-            );
-
             if (is_file($configuration->logEventsVerboseText())) {
                 unlink($configuration->logEventsVerboseText());
             }
@@ -704,7 +629,6 @@ final readonly class Application
                     EventFacade::instance(),
                     $configuration->logfileOtr(),
                     $configuration->includeGitInformationInOtrLogfile(),
-                    $configuration->executionOrder() === TestSuiteSorter::ORDER_RANDOMIZED ? $configuration->randomOrderSeed() : null,
                 );
             } catch (CannotOpenUriForWritingException $e) {
                 EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
@@ -780,13 +704,7 @@ final readonly class Application
             try {
                 $baseline = (new Reader)->read($baselineFile);
             } catch (CannotLoadBaselineException $e) {
-                $message = $e->getMessage();
-
-                if ($message === '') {
-                    $message = 'Cannot load baseline';
-                }
-
-                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning($message);
+                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning($e->getMessage());
             }
 
             if ($baseline !== null) {
@@ -800,30 +718,6 @@ final readonly class Application
     /**
      * @codeCoverageIgnore
      */
-    private function registerInterruptHandler(): void
-    {
-        if (!function_exists('pcntl_async_signals')) {
-            return;
-        }
-
-        $pid = getmypid();
-
-        pcntl_async_signals(true);
-
-        pcntl_signal(SIGINT, static function () use ($pid): void
-        {
-            if (getmypid() !== $pid) {
-                return;
-            }
-
-            if (TestResultFacade::wasInterrupted()) {
-                exit(2);
-            }
-
-            TestResultFacade::interrupt();
-        });
-    }
-
     private function exitWithCrashMessage(Throwable $t): never
     {
         $message = $t->getMessage();
@@ -861,7 +755,7 @@ final readonly class Application
             );
 
             $first = false;
-        } while (($t = $t->getPrevious()) !== null);
+        } while ($t = $t->getPrevious());
 
         exit(Result::CRASH);
     }
@@ -890,18 +784,14 @@ final readonly class Application
             'methods'   => [],
         ];
 
-        $ignoreUndefinedTriggers = $configuration->source()->deprecationTriggers()['ignoreUndefinedTriggers'] ?? false;
-
         foreach ($configuration->source()->deprecationTriggers()['functions'] as $function) {
             if (!function_exists($function)) {
-                if (!$ignoreUndefinedTriggers) {
-                    EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
-                        sprintf(
-                            'Function %s cannot be configured as a deprecation trigger because it is not declared',
-                            $function,
-                        ),
-                    );
-                }
+                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
+                    sprintf(
+                        'Function %s cannot be configured as a deprecation trigger because it is not declared',
+                        $function,
+                    ),
+                );
 
                 continue;
             }
@@ -910,9 +800,7 @@ final readonly class Application
         }
 
         foreach ($configuration->source()->deprecationTriggers()['methods'] as $method) {
-            $parts = explode('::', $method, 2);
-
-            if (count($parts) !== 2) {
+            if (!str_contains($method, '::')) {
                 EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
                     sprintf(
                         '%s cannot be configured as a deprecation trigger because it is not in ClassName::methodName format',
@@ -923,18 +811,16 @@ final readonly class Application
                 continue;
             }
 
-            [$className, $methodName] = $parts;
+            [$className, $methodName] = explode('::', $method);
 
-            if ($methodName === '' || !class_exists($className) || !method_exists($className, $methodName)) {
-                if (!$ignoreUndefinedTriggers) {
-                    EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
-                        sprintf(
-                            'Method %s::%s cannot be configured as a deprecation trigger because it is not declared',
-                            $className,
-                            $methodName,
-                        ),
-                    );
-                }
+            if (!class_exists($className) || !method_exists($className, $methodName)) {
+                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
+                    sprintf(
+                        'Method %s::%s cannot be configured as a deprecation trigger because it is not declared',
+                        $className,
+                        $methodName,
+                    ),
+                );
 
                 continue;
             }
@@ -950,69 +836,19 @@ final readonly class Application
         }
     }
 
-    private function configureIssueTriggerResolvers(Configuration $configuration): void
-    {
-        $classNames = $configuration->source()->issueTriggerResolvers();
-
-        foreach (array_reverse($classNames) as $className) {
-            if (!class_exists($className)) {
-                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
-                    sprintf(
-                        'Class %s cannot be used as an issue trigger resolver because it does not exist',
-                        $className,
-                    ),
-                );
-
-                continue;
-            }
-
-            $resolver = new $className;
-
-            if (!$resolver instanceof Resolver) {
-                EventFacade::emitter()->testRunnerTriggeredPhpunitWarning(
-                    sprintf(
-                        'Class %s cannot be used as an issue trigger resolver because it does not implement %s',
-                        $className,
-                        Resolver::class,
-                    ),
-                );
-
-                continue;
-            }
-
-            ErrorHandler::instance()->addIssueTriggerResolver($resolver);
-        }
-    }
-
     private function preload(): void
     {
         if (!defined('PHPUNIT_COMPOSER_INSTALL')) {
             return;
         }
 
-        $composerInstall = PHPUNIT_COMPOSER_INSTALL;
-
-        if (!is_string($composerInstall)) {
-            return;
-        }
-
-        $classMapFile = dirname($composerInstall) . '/composer/autoload_classmap.php';
+        $classMapFile = dirname(PHPUNIT_COMPOSER_INSTALL) . '/composer/autoload_classmap.php';
 
         if (!is_file($classMapFile)) {
             return;
         }
 
-        $classMap = require $classMapFile;
-
-        if (!is_array($classMap)) {
-            return;
-        }
-
-        foreach ($classMap as $codeUnitName => $sourceCodeFile) {
-            if (!is_string($codeUnitName) || !is_string($sourceCodeFile)) {
-                continue;
-            }
-
+        foreach (require $classMapFile as $codeUnitName => $sourceCodeFile) {
             if (!str_starts_with($codeUnitName, 'PHPUnit\\') &&
                 !str_starts_with($codeUnitName, 'SebastianBergmann\\')) {
                 continue;

@@ -17,13 +17,10 @@ use function array_values;
 use function assert;
 use function dirname;
 use function explode;
-use function getenv;
 use function is_int;
-use function is_string;
 use function realpath;
 use function sprintf;
 use function time;
-use LogicException;
 use PHPUnit\Event\Facade as EventFacade;
 use PHPUnit\Runner\TestSuiteSorter;
 use PHPUnit\TextUI\CliArguments\Configuration as CliConfiguration;
@@ -51,12 +48,6 @@ final readonly class Merger
      */
     public function merge(CliConfiguration $cliConfiguration, XmlConfiguration $xmlConfiguration): Configuration
     {
-        $testFilesFile = null;
-
-        if ($cliConfiguration->hasTestFilesFile()) {
-            $testFilesFile = $cliConfiguration->testFilesFile();
-        }
-
         $configurationFile = null;
 
         if ($xmlConfiguration->wasLoadedFromFile()) {
@@ -88,10 +79,6 @@ final readonly class Merger
             $cacheDirectory = realpath($xmlConfiguration->phpunit()->cacheDirectory());
         }
 
-        if ($cacheDirectory === false) {
-            $cacheDirectory = null;
-        }
-
         if ($cacheDirectory !== null) {
             $coverageCacheDirectory = $cacheDirectory . DIRECTORY_SEPARATOR . 'code-coverage';
             $testResultCacheFile    = $cacheDirectory . DIRECTORY_SEPARATOR . 'test-results';
@@ -99,27 +86,11 @@ final readonly class Merger
 
         if (!isset($testResultCacheFile)) {
             if ($xmlConfiguration->wasLoadedFromFile()) {
-                $configurationFileRealpath = realpath($xmlConfiguration->filename());
-
-                if ($configurationFileRealpath !== false) {
-                    $testResultCacheFile = dirname($configurationFileRealpath) . DIRECTORY_SEPARATOR . '.phpunit.result.cache';
-                } else {
-                    $testResultCacheFile = '.phpunit.result.cache';
-                }
+                $testResultCacheFile = dirname(realpath($xmlConfiguration->filename())) . DIRECTORY_SEPARATOR . '.phpunit.result.cache';
             } else {
-                $phpSelf = null;
+                $candidate = realpath($_SERVER['PHP_SELF']);
 
-                if (isset($_SERVER['PHP_SELF']) && is_string($_SERVER['PHP_SELF'])) {
-                    $phpSelf = $_SERVER['PHP_SELF'];
-                }
-
-                if ($phpSelf !== null) {
-                    $candidate = realpath($phpSelf);
-                } else {
-                    $candidate = false;
-                }
-
-                if ($candidate !== false) {
+                if ($candidate) {
                     $testResultCacheFile = dirname($candidate) . DIRECTORY_SEPARATOR . '.phpunit.result.cache';
                 } else {
                     $testResultCacheFile = '.phpunit.result.cache';
@@ -131,12 +102,6 @@ final readonly class Merger
             $disableCodeCoverageIgnore = $cliConfiguration->disableCodeCoverageIgnore();
         } else {
             $disableCodeCoverageIgnore = $xmlConfiguration->codeCoverage()->disableCodeCoverageIgnore();
-        }
-
-        $disableCoverageTargeting = false;
-
-        if ($cliConfiguration->hasDisableCoverageTargeting()) {
-            $disableCoverageTargeting = $cliConfiguration->disableCoverageTargeting();
         }
 
         if ($cliConfiguration->hasFailOnAllIssues()) {
@@ -407,49 +372,30 @@ final readonly class Merger
             $pathCoverage = $xmlConfiguration->codeCoverage()->pathCoverage();
         }
 
-        if ($cliConfiguration->hasBranchCoverage() && $cliConfiguration->branchCoverage()) {
-            $branchCoverage = $cliConfiguration->branchCoverage();
-        } else {
-            $branchCoverage = $xmlConfiguration->codeCoverage()->branchCoverage();
-        }
-
         $defaultColors     = Colors::default();
         $defaultThresholds = Thresholds::default();
 
-        $coverageClover                     = null;
-        $coverageCobertura                  = null;
-        $coverageCrap4j                     = null;
-        $coverageCrap4jThreshold            = 30;
-        $coverageHtml                       = null;
-        $coverageHtmlLowUpperBound          = $defaultThresholds->lowUpperBound();
-        $coverageHtmlHighLowerBound         = $defaultThresholds->highLowerBound();
-        $coverageHtmlColorSuccessLow        = $defaultColors->successLow();
-        $coverageHtmlColorSuccessLowDark    = $defaultColors->successLowDark();
-        $coverageHtmlColorSuccessMedium     = $defaultColors->successMedium();
-        $coverageHtmlColorSuccessMediumDark = $defaultColors->successMediumDark();
-        $coverageHtmlColorSuccessHigh       = $defaultColors->successHigh();
-        $coverageHtmlColorSuccessHighDark   = $defaultColors->successHighDark();
-        $coverageHtmlColorSuccessBar        = $defaultColors->successBar();
-        $coverageHtmlColorSuccessBarDark    = $defaultColors->successBarDark();
-        $coverageHtmlColorWarning           = $defaultColors->warning();
-        $coverageHtmlColorWarningDark       = $defaultColors->warningDark();
-        $coverageHtmlColorWarningBar        = $defaultColors->warningBar();
-        $coverageHtmlColorWarningBarDark    = $defaultColors->warningBarDark();
-        $coverageHtmlColorDanger            = $defaultColors->danger();
-        $coverageHtmlColorDangerDark        = $defaultColors->dangerDark();
-        $coverageHtmlColorDangerBar         = $defaultColors->dangerBar();
-        $coverageHtmlColorDangerBarDark     = $defaultColors->dangerBarDark();
-        $coverageHtmlColorBreadcrumbs       = $defaultColors->breadcrumbs();
-        $coverageHtmlColorBreadcrumbsDark   = $defaultColors->breadcrumbsDark();
-        $coverageHtmlCustomCssFile          = null;
-        $coverageOpenClover                 = null;
-        $coveragePhp                        = null;
-        $coverageText                       = null;
-        $coverageTextShowUncoveredFiles     = false;
-        $coverageTextShowOnlySummary        = false;
-        $coverageXml                        = null;
-        $coverageXmlIncludeSource           = true;
-        $coverageFromXmlConfiguration       = true;
+        $coverageClover                 = null;
+        $coverageCobertura              = null;
+        $coverageCrap4j                 = null;
+        $coverageCrap4jThreshold        = 30;
+        $coverageHtml                   = null;
+        $coverageHtmlLowUpperBound      = $defaultThresholds->lowUpperBound();
+        $coverageHtmlHighLowerBound     = $defaultThresholds->highLowerBound();
+        $coverageHtmlColorSuccessLow    = $defaultColors->successLow();
+        $coverageHtmlColorSuccessMedium = $defaultColors->successMedium();
+        $coverageHtmlColorSuccessHigh   = $defaultColors->successHigh();
+        $coverageHtmlColorWarning       = $defaultColors->warning();
+        $coverageHtmlColorDanger        = $defaultColors->danger();
+        $coverageHtmlCustomCssFile      = null;
+        $coverageOpenClover             = null;
+        $coveragePhp                    = null;
+        $coverageText                   = null;
+        $coverageTextShowUncoveredFiles = false;
+        $coverageTextShowOnlySummary    = false;
+        $coverageXml                    = null;
+        $coverageXmlIncludeSource       = true;
+        $coverageFromXmlConfiguration   = true;
 
         if ($cliConfiguration->hasNoCoverage() && $cliConfiguration->noCoverage()) {
             $coverageFromXmlConfiguration = false;
@@ -486,24 +432,11 @@ final readonly class Merger
                 $coverageHtmlHighLowerBound = $defaultThresholds->highLowerBound();
             }
 
-            $coverageHtmlColorSuccessLow        = $xmlConfiguration->codeCoverage()->html()->colorSuccessLow();
-            $coverageHtmlColorSuccessLowDark    = $xmlConfiguration->codeCoverage()->html()->colorSuccessLowDark();
-            $coverageHtmlColorSuccessMedium     = $xmlConfiguration->codeCoverage()->html()->colorSuccessMedium();
-            $coverageHtmlColorSuccessMediumDark = $xmlConfiguration->codeCoverage()->html()->colorSuccessMediumDark();
-            $coverageHtmlColorSuccessHigh       = $xmlConfiguration->codeCoverage()->html()->colorSuccessHigh();
-            $coverageHtmlColorSuccessHighDark   = $xmlConfiguration->codeCoverage()->html()->colorSuccessHighDark();
-            $coverageHtmlColorSuccessBar        = $xmlConfiguration->codeCoverage()->html()->colorSuccessBar();
-            $coverageHtmlColorSuccessBarDark    = $xmlConfiguration->codeCoverage()->html()->colorSuccessBarDark();
-            $coverageHtmlColorWarning           = $xmlConfiguration->codeCoverage()->html()->colorWarning();
-            $coverageHtmlColorWarningDark       = $xmlConfiguration->codeCoverage()->html()->colorWarningDark();
-            $coverageHtmlColorWarningBar        = $xmlConfiguration->codeCoverage()->html()->colorWarningBar();
-            $coverageHtmlColorWarningBarDark    = $xmlConfiguration->codeCoverage()->html()->colorWarningBarDark();
-            $coverageHtmlColorDanger            = $xmlConfiguration->codeCoverage()->html()->colorDanger();
-            $coverageHtmlColorDangerDark        = $xmlConfiguration->codeCoverage()->html()->colorDangerDark();
-            $coverageHtmlColorDangerBar         = $xmlConfiguration->codeCoverage()->html()->colorDangerBar();
-            $coverageHtmlColorDangerBarDark     = $xmlConfiguration->codeCoverage()->html()->colorDangerBarDark();
-            $coverageHtmlColorBreadcrumbs       = $xmlConfiguration->codeCoverage()->html()->colorBreadcrumbs();
-            $coverageHtmlColorBreadcrumbsDark   = $xmlConfiguration->codeCoverage()->html()->colorBreadcrumbsDark();
+            $coverageHtmlColorSuccessLow    = $xmlConfiguration->codeCoverage()->html()->colorSuccessLow();
+            $coverageHtmlColorSuccessMedium = $xmlConfiguration->codeCoverage()->html()->colorSuccessMedium();
+            $coverageHtmlColorSuccessHigh   = $xmlConfiguration->codeCoverage()->html()->colorSuccessHigh();
+            $coverageHtmlColorWarning       = $xmlConfiguration->codeCoverage()->html()->colorWarning();
+            $coverageHtmlColorDanger        = $xmlConfiguration->codeCoverage()->html()->colorDanger();
 
             if ($xmlConfiguration->codeCoverage()->html()->hasCustomCssFile()) {
                 $coverageHtmlCustomCssFile = $xmlConfiguration->codeCoverage()->html()->customCssFile();
@@ -512,7 +445,7 @@ final readonly class Merger
 
         if ($cliConfiguration->hasCoverageHtml()) {
             $coverageHtml = $cliConfiguration->coverageHtml();
-        } elseif ($coverageFromXmlConfiguration && $xmlConfiguration->codeCoverage()->hasHtml() && $xmlConfiguration->codeCoverage()->html()->hasTarget()) {
+        } elseif ($coverageFromXmlConfiguration && $xmlConfiguration->codeCoverage()->hasHtml()) {
             $coverageHtml = $xmlConfiguration->codeCoverage()->html()->target()->path();
         }
 
@@ -601,12 +534,6 @@ final readonly class Merger
             $defaultTimeLimit = $xmlConfiguration->phpunit()->defaultTimeLimit();
         }
 
-        if ($cliConfiguration->hasDiffContext()) {
-            $diffContext = $cliConfiguration->diffContext();
-        } else {
-            $diffContext = $xmlConfiguration->phpunit()->diffContext();
-        }
-
         $timeoutForSmallTests  = $xmlConfiguration->phpunit()->timeoutForSmallTests();
         $timeoutForMediumTests = $xmlConfiguration->phpunit()->timeoutForMediumTests();
         $timeoutForLargeTests  = $xmlConfiguration->phpunit()->timeoutForLargeTests();
@@ -621,12 +548,6 @@ final readonly class Merger
             $strictCoverage = $cliConfiguration->strictCoverage();
         } else {
             $strictCoverage = $xmlConfiguration->phpunit()->beStrictAboutCoverageMetadata();
-        }
-
-        if ($cliConfiguration->hasRequireCoverageContribution()) {
-            $requireCoverageContribution = $cliConfiguration->requireCoverageContribution();
-        } else {
-            $requireCoverageContribution = $xmlConfiguration->phpunit()->requireCoverageContribution();
         }
 
         if ($cliConfiguration->hasDisallowTestOutput()) {
@@ -695,8 +616,7 @@ final readonly class Merger
             $reverseDefectList = $xmlConfiguration->phpunit()->reverseDefectList();
         }
 
-        $requireCoverageMetadata  = $xmlConfiguration->phpunit()->requireCoverageMetadata();
-        $requireSealedMockObjects = $xmlConfiguration->phpunit()->requireSealedMockObjects();
+        $requireCoverageMetadata = $xmlConfiguration->phpunit()->requireCoverageMetadata();
 
         if ($cliConfiguration->hasExecutionOrder()) {
             $executionOrder = $cliConfiguration->executionOrder();
@@ -762,12 +682,10 @@ final readonly class Merger
             $logfileOtr = $xmlConfiguration->logging()->otr()->target()->path();
         }
 
-        $includeGitInformation             = false;
         $includeGitInformationInOtrLogfile = false;
 
-        if ($cliConfiguration->hasIncludeGitInformation()) {
-            $includeGitInformation             = $cliConfiguration->includeGitInformation();
-            $includeGitInformationInOtrLogfile = $cliConfiguration->includeGitInformation();
+        if ($cliConfiguration->hasIncludeGitInformationInOtrLogfile()) {
+            $includeGitInformationInOtrLogfile = $cliConfiguration->includeGitInformationInOtrLogfile();
         } elseif ($loggingFromXmlConfiguration && $xmlConfiguration->logging()->hasOtr()) {
             $includeGitInformationInOtrLogfile = $xmlConfiguration->logging()->otr()->includeGitInformation();
         }
@@ -794,14 +712,6 @@ final readonly class Merger
 
         if ($cliConfiguration->hasLogEventsVerboseText()) {
             $logEventsVerboseText = $cliConfiguration->logEventsVerboseText();
-        }
-
-        $compactOutput = false;
-
-        if ($cliConfiguration->hasCompactPrinter() && $cliConfiguration->compactPrinter()) {
-            $compactOutput = true;
-        } elseif (getenv('PHPUNIT_COMPACT_OUTPUT') === '1') {
-            $compactOutput = true;
         }
 
         $teamCityOutput = false;
@@ -870,18 +780,6 @@ final readonly class Merger
             $excludeFilter = $cliConfiguration->excludeFilter();
         }
 
-        $testIdFilterFile = null;
-
-        if ($cliConfiguration->hasTestIdFile()) {
-            $testIdFilterFile = $cliConfiguration->testIdFile();
-        }
-
-        $testIdFilter = null;
-
-        if ($cliConfiguration->hasTestIdFilter()) {
-            $testIdFilter = $cliConfiguration->testIdFilter();
-        }
-
         $ignoreTestSelectionInXmlConfiguration = false;
 
         if ($cliConfiguration->hasAll()) {
@@ -931,10 +829,6 @@ final readonly class Merger
 
         if ($cliConfiguration->hasIncludePath()) {
             foreach (explode(PATH_SEPARATOR, $cliConfiguration->includePath()) as $includePath) {
-                if ($includePath === '') {
-                    continue;
-                }
-
                 $includePaths[] = new Directory($includePath);
             }
         }
@@ -1047,81 +941,8 @@ final readonly class Merger
             );
         }
 
-        $testFilesFile                      = $this->nullableNonEmptyString($testFilesFile);
-        $bootstrap                          = $this->nullableNonEmptyString($bootstrap);
-        $coverageClover                     = $this->nullableNonEmptyString($coverageClover);
-        $coverageCobertura                  = $this->nullableNonEmptyString($coverageCobertura);
-        $coverageCrap4j                     = $this->nullableNonEmptyString($coverageCrap4j);
-        $coverageHtml                       = $this->nullableNonEmptyString($coverageHtml);
-        $coverageHtmlLowUpperBound          = $this->clampNonNegativeInt($coverageHtmlLowUpperBound);
-        $coverageHtmlHighLowerBound         = $this->clampNonNegativeInt($coverageHtmlHighLowerBound);
-        $coverageHtmlColorSuccessLow        = $this->requireNonEmptyString($coverageHtmlColorSuccessLow, 'coverage HTML color "success low"');
-        $coverageHtmlColorSuccessLowDark    = $this->requireNonEmptyString($coverageHtmlColorSuccessLowDark, 'coverage HTML color "success low dark"');
-        $coverageHtmlColorSuccessMedium     = $this->requireNonEmptyString($coverageHtmlColorSuccessMedium, 'coverage HTML color "success medium"');
-        $coverageHtmlColorSuccessMediumDark = $this->requireNonEmptyString($coverageHtmlColorSuccessMediumDark, 'coverage HTML color "success medium dark"');
-        $coverageHtmlColorSuccessHigh       = $this->requireNonEmptyString($coverageHtmlColorSuccessHigh, 'coverage HTML color "success high"');
-        $coverageHtmlColorSuccessHighDark   = $this->requireNonEmptyString($coverageHtmlColorSuccessHighDark, 'coverage HTML color "success high dark"');
-        $coverageHtmlColorSuccessBar        = $this->requireNonEmptyString($coverageHtmlColorSuccessBar, 'coverage HTML color "success bar"');
-        $coverageHtmlColorSuccessBarDark    = $this->requireNonEmptyString($coverageHtmlColorSuccessBarDark, 'coverage HTML color "success bar dark"');
-        $coverageHtmlColorWarning           = $this->requireNonEmptyString($coverageHtmlColorWarning, 'coverage HTML color "warning"');
-        $coverageHtmlColorWarningDark       = $this->requireNonEmptyString($coverageHtmlColorWarningDark, 'coverage HTML color "warning dark"');
-        $coverageHtmlColorWarningBar        = $this->requireNonEmptyString($coverageHtmlColorWarningBar, 'coverage HTML color "warning bar"');
-        $coverageHtmlColorWarningBarDark    = $this->requireNonEmptyString($coverageHtmlColorWarningBarDark, 'coverage HTML color "warning bar dark"');
-        $coverageHtmlColorDanger            = $this->requireNonEmptyString($coverageHtmlColorDanger, 'coverage HTML color "danger"');
-        $coverageHtmlColorDangerDark        = $this->requireNonEmptyString($coverageHtmlColorDangerDark, 'coverage HTML color "danger dark"');
-        $coverageHtmlColorDangerBar         = $this->requireNonEmptyString($coverageHtmlColorDangerBar, 'coverage HTML color "danger bar"');
-        $coverageHtmlColorDangerBarDark     = $this->requireNonEmptyString($coverageHtmlColorDangerBarDark, 'coverage HTML color "danger bar dark"');
-        $coverageHtmlColorBreadcrumbs       = $this->requireNonEmptyString($coverageHtmlColorBreadcrumbs, 'coverage HTML color "breadcrumbs"');
-        $coverageHtmlColorBreadcrumbsDark   = $this->requireNonEmptyString($coverageHtmlColorBreadcrumbsDark, 'coverage HTML color "breadcrumbs dark"');
-        $coverageOpenClover                 = $this->nullableNonEmptyString($coverageOpenClover);
-        $coveragePhp                        = $this->nullableNonEmptyString($coveragePhp);
-        $coverageText                       = $this->nullableNonEmptyString($coverageText);
-        $coverageXml                        = $this->nullableNonEmptyString($coverageXml);
-        $stopOnDefect                       = $this->clampNonNegativeInt($stopOnDefect);
-        $stopOnDeprecation                  = $this->clampNonNegativeInt($stopOnDeprecation);
-        $specificDeprecationToStopOn        = $this->nullableNonEmptyString($specificDeprecationToStopOn);
-        $stopOnError                        = $this->clampNonNegativeInt($stopOnError);
-        $stopOnFailure                      = $this->clampNonNegativeInt($stopOnFailure);
-        $stopOnIncomplete                   = $this->clampNonNegativeInt($stopOnIncomplete);
-        $stopOnNotice                       = $this->clampNonNegativeInt($stopOnNotice);
-        $stopOnRisky                        = $this->clampNonNegativeInt($stopOnRisky);
-        $stopOnSkipped                      = $this->clampNonNegativeInt($stopOnSkipped);
-        $stopOnWarning                      = $this->clampNonNegativeInt($stopOnWarning);
-        $defaultTimeLimit                   = $this->clampNonNegativeInt($defaultTimeLimit);
-        $logfileOtr                         = $this->nullableNonEmptyString($logfileOtr);
-        $logEventsText                      = $this->nullableNonEmptyString($logEventsText);
-        $logEventsVerboseText               = $this->nullableNonEmptyString($logEventsVerboseText);
-        $testIdFilterFile                   = $this->nullableNonEmptyString($testIdFilterFile);
-        $testIdFilter                       = $this->nullableNonEmptyString($testIdFilter);
-        $randomOrderSeed                    = $this->clampPositiveInt($randomOrderSeed);
-
-        $normalizedGroups = [];
-
-        foreach ($groups as $group) {
-            if ($group === '') {
-                continue;
-            }
-
-            $normalizedGroups[] = $group;
-        }
-
-        $groups = $normalizedGroups;
-
-        $normalizedExcludeGroups = [];
-
-        foreach ($excludeGroups as $excludeGroup) {
-            if ($excludeGroup === '') {
-                continue;
-            }
-
-            $normalizedExcludeGroups[] = $excludeGroup;
-        }
-
-        $excludeGroups = $normalizedExcludeGroups;
-
         return new Configuration(
             $cliConfiguration->arguments(),
-            $testFilesFile,
             $configurationFile,
             $bootstrap,
             $xmlConfiguration->phpunit()->bootstrapForTestSuite(),
@@ -1149,7 +970,6 @@ final readonly class Merger
                 $xmlConfiguration->source()->ignoreDirectDeprecations(),
                 $xmlConfiguration->source()->ignoreIndirectDeprecations(),
                 $xmlConfiguration->source()->identifyIssueTrigger(),
-                $xmlConfiguration->source()->issueTriggerResolvers(),
             ),
             $testResultCacheFile,
             $coverageClover,
@@ -1160,23 +980,10 @@ final readonly class Merger
             $coverageHtmlLowUpperBound,
             $coverageHtmlHighLowerBound,
             $coverageHtmlColorSuccessLow,
-            $coverageHtmlColorSuccessLowDark,
             $coverageHtmlColorSuccessMedium,
-            $coverageHtmlColorSuccessMediumDark,
             $coverageHtmlColorSuccessHigh,
-            $coverageHtmlColorSuccessHighDark,
-            $coverageHtmlColorSuccessBar,
-            $coverageHtmlColorSuccessBarDark,
             $coverageHtmlColorWarning,
-            $coverageHtmlColorWarningDark,
-            $coverageHtmlColorWarningBar,
-            $coverageHtmlColorWarningBarDark,
             $coverageHtmlColorDanger,
-            $coverageHtmlColorDangerDark,
-            $coverageHtmlColorDangerBar,
-            $coverageHtmlColorDangerBarDark,
-            $coverageHtmlColorBreadcrumbs,
-            $coverageHtmlColorBreadcrumbsDark,
             $coverageHtmlCustomCssFile,
             $coverageOpenClover,
             $coveragePhp,
@@ -1186,10 +993,8 @@ final readonly class Merger
             $coverageXml,
             $coverageXmlIncludeSource,
             $pathCoverage,
-            $branchCoverage,
             $xmlConfiguration->codeCoverage()->ignoreDeprecatedCodeUnits(),
             $disableCodeCoverageIgnore,
-            $disableCoverageTargeting,
             $failOnAllIssues,
             $failOnDeprecation,
             $failOnPhpunitDeprecation,
@@ -1233,13 +1038,11 @@ final readonly class Merger
             $processIsolation,
             $enforceTimeLimit,
             $defaultTimeLimit,
-            $diffContext,
             $timeoutForSmallTests,
             $timeoutForMediumTests,
             $timeoutForLargeTests,
             $reportUselessTests,
             $strictCoverage,
-            $requireCoverageContribution,
             $disallowTestOutput,
             $displayDetailsOnAllIssues,
             $displayDetailsOnIncompleteTests,
@@ -1252,7 +1055,6 @@ final readonly class Merger
             $displayDetailsOnTestsThatTriggerWarnings,
             $reverseDefectList,
             $requireCoverageMetadata,
-            $requireSealedMockObjects,
             $noProgress,
             $noResults,
             $noOutput,
@@ -1262,13 +1064,11 @@ final readonly class Merger
             $logfileTeamcity,
             $logfileJunit,
             $logfileOtr,
-            $includeGitInformation,
             $includeGitInformationInOtrLogfile,
             $logfileTestdoxHtml,
             $logfileTestdoxText,
             $logEventsText,
             $logEventsVerboseText,
-            $compactOutput,
             $teamCityOutput,
             $testDoxOutput,
             $testDoxOutputSummary,
@@ -1277,8 +1077,6 @@ final readonly class Merger
             $testsRequiringPhpExtension,
             $filter,
             $excludeFilter,
-            $testIdFilterFile,
-            $testIdFilter,
             $groups,
             $excludeGroups,
             $randomOrderSeed,
@@ -1309,56 +1107,6 @@ final readonly class Merger
             $cliConfiguration->withTelemetry(),
             $xmlConfiguration->phpunit()->shortenArraysForExportThreshold(),
         );
-    }
-
-    /**
-     * @return null|non-empty-string
-     */
-    private function nullableNonEmptyString(?string $value): ?string
-    {
-        if ($value === null || $value === '') {
-            return null;
-        }
-
-        return $value;
-    }
-
-    /**
-     * @throws LogicException
-     *
-     * @return non-empty-string
-     */
-    private function requireNonEmptyString(string $value, string $context): string
-    {
-        if ($value === '') {
-            throw new LogicException(sprintf('"%s" must not be empty', $context));
-        }
-
-        return $value;
-    }
-
-    /**
-     * @return non-negative-int
-     */
-    private function clampNonNegativeInt(int $value): int
-    {
-        if ($value < 0) {
-            return 0;
-        }
-
-        return $value;
-    }
-
-    /**
-     * @return positive-int
-     */
-    private function clampPositiveInt(int $value): int
-    {
-        if ($value < 1) {
-            return 1;
-        }
-
-        return $value;
     }
 
     private function hasExplicitTestSelection(CliConfiguration $cliConfiguration): bool

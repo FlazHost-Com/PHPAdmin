@@ -11,12 +11,13 @@ namespace SebastianBergmann\CodeCoverage\StaticAnalysis;
 
 use const T_COMMENT;
 use const T_DOC_COMMENT;
-use function array_keys;
-use function array_replace;
+use function array_merge;
+use function array_unique;
 use function assert;
 use function is_array;
-use function ksort;
 use function max;
+use function range;
+use function sort;
 use function sprintf;
 use function substr_count;
 use function token_get_all;
@@ -24,25 +25,15 @@ use function trim;
 use PhpParser\Error;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
-use PhpParser\Parser;
 use PhpParser\ParserFactory;
 use SebastianBergmann\CodeCoverage\ParserException;
 use SebastianBergmann\LinesOfCode\LineCountingVisitor;
 
 /**
  * @internal This interface is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final readonly class ParsingSourceAnalyser implements SourceAnalyser
 {
-    private Parser $parser;
-
-    public function __construct()
-    {
-        $this->parser = (new ParserFactory)->createForHostVersion();
-    }
-
     /**
      * @param non-empty-string $sourceCodeFile
      */
@@ -50,10 +41,16 @@ final readonly class ParsingSourceAnalyser implements SourceAnalyser
     {
         $linesOfCode = max(substr_count($sourceCode, "\n") + 1, substr_count($sourceCode, "\r") + 1);
 
+        if ($linesOfCode === 0 && $sourceCode !== '') {
+            $linesOfCode = 1;
+        }
+
         assert($linesOfCode > 0);
 
+        $parser = (new ParserFactory)->createForHostVersion();
+
         try {
-            $nodes = $this->parser->parse($sourceCode);
+            $nodes = $parser->parse($sourceCode);
 
             assert($nodes !== null);
 
@@ -86,18 +83,18 @@ final readonly class ParsingSourceAnalyser implements SourceAnalyser
         }
         // @codeCoverageIgnoreEnd
 
-        $ignoredLines = array_replace(
-            $this->findLinesIgnoredByLineBasedAnnotations(
-                $sourceCodeFile,
-                $sourceCode,
-                $useAnnotationsForIgnoringCode,
+        $ignoredLines = array_unique(
+            array_merge(
+                $this->findLinesIgnoredByLineBasedAnnotations(
+                    $sourceCodeFile,
+                    $sourceCode,
+                    $useAnnotationsForIgnoringCode,
+                ),
+                $ignoredLinesFindingVisitor->ignoredLines(),
             ),
-            $ignoredLinesFindingVisitor->ignoredLines(),
         );
 
-        ksort($ignoredLines);
-
-        $ignoredLines = array_keys($ignoredLines);
+        sort($ignoredLines);
 
         return new AnalysisResult(
             $codeUnitFindingVisitor->interfaces(),
@@ -110,13 +107,12 @@ final readonly class ParsingSourceAnalyser implements SourceAnalyser
                 $lineCountingVisitor->result()->nonCommentLinesOfCode(),
             ),
             $executableLinesFindingVisitor->executableLinesGroupedByBranch(),
-            $executableLinesFindingVisitor->branchOperatorLines(),
             $ignoredLines,
         );
     }
 
     /**
-     * @return array<int, true>
+     * @return array<int, int>
      */
     private function findLinesIgnoredByLineBasedAnnotations(string $filename, string $source, bool $useAnnotationsForIgnoringCode): array
     {
@@ -133,28 +129,32 @@ final readonly class ParsingSourceAnalyser implements SourceAnalyser
                 continue;
             }
 
-            $annotation = trim($token[1], "/ \n\r\t\0\x0B");
+            $comment = trim($token[1]);
 
-            if ($annotation === '@codeCoverageIgnore') {
-                $result[$token[2]] = true;
+            if ($comment === '// @codeCoverageIgnore' ||
+                $comment === '//@codeCoverageIgnore') {
+                $result[] = $token[2];
 
                 continue;
             }
 
-            if ($annotation === '@codeCoverageIgnoreStart') {
+            if ($comment === '// @codeCoverageIgnoreStart' ||
+                $comment === '//@codeCoverageIgnoreStart') {
                 $start = $token[2];
 
                 continue;
             }
 
-            if ($annotation === '@codeCoverageIgnoreEnd') {
+            if ($comment === '// @codeCoverageIgnoreEnd' ||
+                $comment === '//@codeCoverageIgnoreEnd') {
                 if (false === $start) {
                     $start = $token[2];
                 }
 
-                for ($line = $start; $line <= $token[2]; $line++) {
-                    $result[$line] = true;
-                }
+                $result = array_merge(
+                    $result,
+                    range($start, $token[2]),
+                );
             }
         }
 

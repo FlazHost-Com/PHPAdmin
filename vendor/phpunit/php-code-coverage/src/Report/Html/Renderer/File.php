@@ -12,6 +12,78 @@ namespace SebastianBergmann\CodeCoverage\Report\Html;
 use const ENT_COMPAT;
 use const ENT_HTML401;
 use const ENT_SUBSTITUTE;
+use const T_ABSTRACT;
+use const T_ARRAY;
+use const T_AS;
+use const T_BREAK;
+use const T_CALLABLE;
+use const T_CASE;
+use const T_CATCH;
+use const T_CLASS;
+use const T_CLONE;
+use const T_COMMENT;
+use const T_CONST;
+use const T_CONTINUE;
+use const T_DECLARE;
+use const T_DEFAULT;
+use const T_DO;
+use const T_DOC_COMMENT;
+use const T_ECHO;
+use const T_ELSE;
+use const T_ELSEIF;
+use const T_EMPTY;
+use const T_ENDDECLARE;
+use const T_ENDFOR;
+use const T_ENDFOREACH;
+use const T_ENDIF;
+use const T_ENDSWITCH;
+use const T_ENDWHILE;
+use const T_ENUM;
+use const T_EVAL;
+use const T_EXIT;
+use const T_EXTENDS;
+use const T_FINAL;
+use const T_FINALLY;
+use const T_FN;
+use const T_FOR;
+use const T_FOREACH;
+use const T_FUNCTION;
+use const T_GLOBAL;
+use const T_GOTO;
+use const T_HALT_COMPILER;
+use const T_IF;
+use const T_IMPLEMENTS;
+use const T_INCLUDE;
+use const T_INCLUDE_ONCE;
+use const T_INLINE_HTML;
+use const T_INSTANCEOF;
+use const T_INSTEADOF;
+use const T_INTERFACE;
+use const T_ISSET;
+use const T_LIST;
+use const T_MATCH;
+use const T_NAMESPACE;
+use const T_NEW;
+use const T_PRINT;
+use const T_PRIVATE;
+use const T_PROTECTED;
+use const T_PUBLIC;
+use const T_READONLY;
+use const T_REQUIRE;
+use const T_REQUIRE_ONCE;
+use const T_RETURN;
+use const T_STATIC;
+use const T_SWITCH;
+use const T_THROW;
+use const T_TRAIT;
+use const T_TRY;
+use const T_UNSET;
+use const T_USE;
+use const T_VAR;
+use const T_WHILE;
+use const T_YIELD;
+use const T_YIELD_FROM;
+use const TOKEN_PARSE;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -19,11 +91,17 @@ use function array_pop;
 use function array_unique;
 use function count;
 use function explode;
+use function file_get_contents;
 use function htmlspecialchars;
+use function is_string;
 use function ksort;
 use function range;
 use function sort;
 use function sprintf;
+use function str_ends_with;
+use function str_replace;
+use function token_get_all;
+use function trim;
 use SebastianBergmann\CodeCoverage\Data\ProcessedBranchCoverageData;
 use SebastianBergmann\CodeCoverage\Data\ProcessedClassType;
 use SebastianBergmann\CodeCoverage\Data\ProcessedFunctionCoverageData;
@@ -33,33 +111,100 @@ use SebastianBergmann\CodeCoverage\Data\ProcessedPathCoverageData;
 use SebastianBergmann\CodeCoverage\Data\ProcessedTraitType;
 use SebastianBergmann\CodeCoverage\FileCouldNotBeWrittenException;
 use SebastianBergmann\CodeCoverage\Node\File as FileNode;
-use SebastianBergmann\CodeCoverage\Report\Thresholds;
 use SebastianBergmann\CodeCoverage\Util\Percentage;
 use SebastianBergmann\Template\Exception;
 use SebastianBergmann\Template\Template;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @phpstan-import-type TestType from \SebastianBergmann\CodeCoverage\CodeCoverage
  */
 final class File extends Renderer
 {
+    /**
+     * @var array<int,true>
+     */
+    private const array KEYWORD_TOKENS = [
+        T_ABSTRACT      => true,
+        T_ARRAY         => true,
+        T_AS            => true,
+        T_BREAK         => true,
+        T_CALLABLE      => true,
+        T_CASE          => true,
+        T_CATCH         => true,
+        T_CLASS         => true,
+        T_CLONE         => true,
+        T_CONST         => true,
+        T_CONTINUE      => true,
+        T_DECLARE       => true,
+        T_DEFAULT       => true,
+        T_DO            => true,
+        T_ECHO          => true,
+        T_ELSE          => true,
+        T_ELSEIF        => true,
+        T_EMPTY         => true,
+        T_ENDDECLARE    => true,
+        T_ENDFOR        => true,
+        T_ENDFOREACH    => true,
+        T_ENDIF         => true,
+        T_ENDSWITCH     => true,
+        T_ENDWHILE      => true,
+        T_ENUM          => true,
+        T_EVAL          => true,
+        T_EXIT          => true,
+        T_EXTENDS       => true,
+        T_FINAL         => true,
+        T_FINALLY       => true,
+        T_FN            => true,
+        T_FOR           => true,
+        T_FOREACH       => true,
+        T_FUNCTION      => true,
+        T_GLOBAL        => true,
+        T_GOTO          => true,
+        T_HALT_COMPILER => true,
+        T_IF            => true,
+        T_IMPLEMENTS    => true,
+        T_INCLUDE       => true,
+        T_INCLUDE_ONCE  => true,
+        T_INSTANCEOF    => true,
+        T_INSTEADOF     => true,
+        T_INTERFACE     => true,
+        T_ISSET         => true,
+        T_LIST          => true,
+        T_MATCH         => true,
+        T_NAMESPACE     => true,
+        T_NEW           => true,
+        T_PRINT         => true,
+        T_PRIVATE       => true,
+        T_PROTECTED     => true,
+        T_PUBLIC        => true,
+        T_READONLY      => true,
+        T_REQUIRE       => true,
+        T_REQUIRE_ONCE  => true,
+        T_RETURN        => true,
+        T_STATIC        => true,
+        T_SWITCH        => true,
+        T_THROW         => true,
+        T_TRAIT         => true,
+        T_TRY           => true,
+        T_UNSET         => true,
+        T_USE           => true,
+        T_VAR           => true,
+        T_WHILE         => true,
+        T_YIELD         => true,
+        T_YIELD_FROM    => true,
+    ];
+
     private const int HTML_SPECIAL_CHARS_FLAGS = ENT_COMPAT | ENT_HTML401 | ENT_SUBSTITUTE;
-    private readonly SyntaxHighlighter $syntaxHighlighter;
 
-    public function __construct(string $templatePath, string $generator, string $date, Thresholds $thresholds, bool $hasBranchCoverage, bool $hasPathCoverage)
-    {
-        parent::__construct($templatePath, $generator, $date, $thresholds, $hasBranchCoverage, $hasPathCoverage);
-
-        $this->syntaxHighlighter = new SyntaxHighlighter;
-    }
+    /**
+     * @var array<non-empty-string, list<string>>
+     */
+    private static array $formattedSourceCache = [];
 
     public function render(FileNode $node, string $file): void
     {
-        $template = new Template($this->templateNameForTier('file'), '{{', '}}');
+        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'file_branch.html' : 'file.html');
+        $template     = new Template($templateName, '{{', '}}');
         $this->setCommonTemplateVariables($template, $node);
 
         $template->setVar(
@@ -100,9 +245,7 @@ final class File extends Renderer
                     $e,
                 );
             }
-        }
 
-        if ($this->hasPathCoverage) {
             $template->setVar(
                 [
                     'items'     => $this->renderItems($node),
@@ -126,10 +269,12 @@ final class File extends Renderer
 
     private function renderItems(FileNode $node): string
     {
-        $template = new Template($this->templateNameForTier('file_item'), '{{', '}}');
+        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'file_item_branch.html' : 'file_item.html');
+        $template     = new Template($templateName, '{{', '}}');
 
+        $methodTemplateName = $this->templatePath . ($this->hasBranchCoverage ? 'method_item_branch.html' : 'method_item.html');
         $methodItemTemplate = new Template(
-            $this->templateNameForTier('method_item'),
+            $methodTemplateName,
             '{{',
             '}}',
         );
@@ -343,12 +488,6 @@ final class File extends Renderer
             1,
         );
 
-        if ($item instanceof ProcessedFunctionType) {
-            $name = $item->functionName;
-        } else {
-            $name = $item->methodName;
-        }
-
         return $this->renderItemTemplate(
             $template,
             [
@@ -357,7 +496,7 @@ final class File extends Renderer
                     $indent,
                     $item->startLine,
                     htmlspecialchars($item->signature, self::HTML_SPECIAL_CHARS_FLAGS),
-                    $this->escapeHtml($name),
+                    $item instanceof ProcessedFunctionType ? $item->functionName : $item->methodName,
                 ),
                 'numMethods'                      => $numMethods,
                 'numTestedMethods'                => $numTestedMethods,
@@ -380,22 +519,6 @@ final class File extends Renderer
         );
     }
 
-    /**
-     * @return list<string>
-     */
-    private function highlightedSourceFor(FileNode $node): array
-    {
-        $path = $node->pathAsString();
-
-        if ($path === '') {
-            // @codeCoverageIgnoreStart
-            return [];
-            // @codeCoverageIgnoreEnd
-        }
-
-        return $this->syntaxHighlighter->highlight($path);
-    }
-
     private function renderSourceWithLineCoverage(FileNode $node): string
     {
         $linesTemplate      = new Template($this->templatePath . 'lines.html.dist', '{{', '}}');
@@ -403,7 +526,7 @@ final class File extends Renderer
 
         $coverageData = $node->lineCoverageData();
         $testData     = $node->testData();
-        $codeLines    = $this->highlightedSourceFor($node);
+        $codeLines    = $this->loadFile($node->pathAsString());
         $lines        = '';
         $i            = 1;
 
@@ -430,12 +553,6 @@ final class File extends Renderer
                     $popoverContent = '<ul>';
 
                     foreach ($coverageData[$i] as $test) {
-                        if (!isset($testData[$test])) {
-                            // @codeCoverageIgnoreStart
-                            continue;
-                            // @codeCoverageIgnoreEnd
-                        }
-
                         if ($lineCss === 'covered-by-large-tests' && $testData[$test]['size'] === 'medium') {
                             $lineCss = 'covered-by-medium-tests';
                         } elseif ($testData[$test]['size'] === 'small') {
@@ -477,7 +594,7 @@ final class File extends Renderer
 
         $functionCoverageData = $node->functionCoverageData();
         $testData             = $node->testData();
-        $codeLines            = $this->highlightedSourceFor($node);
+        $codeLines            = $this->loadFile($node->pathAsString());
 
         $lineData = [];
 
@@ -509,44 +626,32 @@ final class File extends Renderer
         }
 
         $lines = '';
+        $i     = 1;
 
         /** @var string $line */
-        foreach ($codeLines as $index => $line) {
-            $i       = $index + 1;
+        foreach ($codeLines as $line) {
             $trClass = '';
             $popover = '';
 
-            $currentLineData = $lineData[$i] ?? [
-                'includedInBranches'    => 0,
-                'includedInHitBranches' => 0,
-                'tests'                 => [],
-            ];
-
-            if ($currentLineData['includedInBranches'] > 0) {
+            if ($lineData[$i]['includedInBranches'] > 0) {
                 $lineCss = 'success';
 
-                if ($currentLineData['includedInHitBranches'] === 0) {
+                if ($lineData[$i]['includedInHitBranches'] === 0) {
                     $lineCss = 'danger';
-                } elseif ($currentLineData['includedInHitBranches'] !== $currentLineData['includedInBranches']) {
+                } elseif ($lineData[$i]['includedInHitBranches'] !== $lineData[$i]['includedInBranches']) {
                     $lineCss = 'warning';
                 }
 
                 $popoverContent = '<ul>';
 
-                if (count($currentLineData['tests']) === 1) {
+                if (count($lineData[$i]['tests']) === 1) {
                     $popoverTitle = '1 test covers line ' . $i;
                 } else {
-                    $popoverTitle = count($currentLineData['tests']) . ' tests cover line ' . $i;
+                    $popoverTitle = count($lineData[$i]['tests']) . ' tests cover line ' . $i;
                 }
-                $popoverTitle .= '. These are covering ' . $currentLineData['includedInHitBranches'] . ' out of the ' . $currentLineData['includedInBranches'] . ' code branches.';
+                $popoverTitle .= '. These are covering ' . $lineData[$i]['includedInHitBranches'] . ' out of the ' . $lineData[$i]['includedInBranches'] . ' code branches.';
 
-                foreach ($currentLineData['tests'] as $test) {
-                    if (!isset($testData[$test])) {
-                        // @codeCoverageIgnoreStart
-                        continue;
-                        // @codeCoverageIgnoreEnd
-                    }
-
+                foreach ($lineData[$i]['tests'] as $test) {
                     $popoverContent .= $this->createPopoverContentForTest($test, $testData[$test]);
                 }
 
@@ -561,6 +666,8 @@ final class File extends Renderer
             }
 
             $lines .= $this->renderLine($singleLineTemplate, $i, $line, $trClass, $popover);
+
+            $i++;
         }
 
         $linesTemplate->setVar(['lines' => $lines]);
@@ -575,7 +682,7 @@ final class File extends Renderer
 
         $functionCoverageData = $node->functionCoverageData();
         $testData             = $node->testData();
-        $codeLines            = $this->highlightedSourceFor($node);
+        $codeLines            = $this->loadFile($node->pathAsString());
 
         $lineData = [];
 
@@ -592,12 +699,6 @@ final class File extends Renderer
             /** @var ProcessedPathCoverageData $path */
             foreach ($method->paths as $pathId => $path) {
                 foreach ($path->path as $branchTaken) {
-                    if (!isset($method->branches[$branchTaken])) {
-                        // @codeCoverageIgnoreStart
-                        continue;
-                        // @codeCoverageIgnoreEnd
-                    }
-
                     foreach (range($method->branches[$branchTaken]->line_start, $method->branches[$branchTaken]->line_end) as $line) {
                         if (!isset($lineData[$line])) {
                             continue;
@@ -614,21 +715,14 @@ final class File extends Renderer
         }
 
         $lines = '';
+        $i     = 1;
 
         /** @var string $line */
-        foreach ($codeLines as $index => $line) {
-            $i       = $index + 1;
-            $trClass = '';
-            $popover = '';
-
-            $currentLineData = $lineData[$i] ?? [
-                'includedInPaths'    => [],
-                'includedInHitPaths' => [],
-                'tests'              => [],
-            ];
-
-            $includedInPathsCount    = count(array_unique($currentLineData['includedInPaths']));
-            $includedInHitPathsCount = count(array_unique($currentLineData['includedInHitPaths']));
+        foreach ($codeLines as $line) {
+            $trClass                 = '';
+            $popover                 = '';
+            $includedInPathsCount    = count(array_unique($lineData[$i]['includedInPaths']));
+            $includedInHitPathsCount = count(array_unique($lineData[$i]['includedInHitPaths']));
 
             if ($includedInPathsCount > 0) {
                 $lineCss = 'success';
@@ -641,20 +735,14 @@ final class File extends Renderer
 
                 $popoverContent = '<ul>';
 
-                if (count($currentLineData['tests']) === 1) {
+                if (count($lineData[$i]['tests']) === 1) {
                     $popoverTitle = '1 test covers line ' . $i;
                 } else {
-                    $popoverTitle = count($currentLineData['tests']) . ' tests cover line ' . $i;
+                    $popoverTitle = count($lineData[$i]['tests']) . ' tests cover line ' . $i;
                 }
                 $popoverTitle .= '. These are covering ' . $includedInHitPathsCount . ' out of the ' . $includedInPathsCount . ' code paths.';
 
-                foreach ($currentLineData['tests'] as $test) {
-                    if (!isset($testData[$test])) {
-                        // @codeCoverageIgnoreStart
-                        continue;
-                        // @codeCoverageIgnoreEnd
-                    }
-
+                foreach ($lineData[$i]['tests'] as $test) {
                     $popoverContent .= $this->createPopoverContentForTest($test, $testData[$test]);
                 }
 
@@ -669,6 +757,8 @@ final class File extends Renderer
             }
 
             $lines .= $this->renderLine($singleLineTemplate, $i, $line, $trClass, $popover);
+
+            $i++;
         }
 
         $linesTemplate->setVar(['lines' => $lines]);
@@ -682,7 +772,7 @@ final class File extends Renderer
 
         $coverageData = $node->functionCoverageData();
         $testData     = $node->testData();
-        $codeLines    = $this->highlightedSourceFor($node);
+        $codeLines    = $this->loadFile($node->pathAsString());
         $branches     = '';
 
         ksort($coverageData);
@@ -708,8 +798,7 @@ final class File extends Renderer
     }
 
     /**
-     * @param list<string>                      $codeLines
-     * @param array<non-empty-string, TestType> $testData
+     * @param list<string> $codeLines
      */
     private function renderBranchLines(ProcessedBranchCoverageData $branch, array $codeLines, array $testData): string
     {
@@ -745,12 +834,6 @@ final class File extends Renderer
                 }
 
                 foreach ($branch->hit as $test) {
-                    if (!isset($testData[$test])) {
-                        // @codeCoverageIgnoreStart
-                        continue;
-                        // @codeCoverageIgnoreEnd
-                    }
-
                     if ($lineCss === 'covered-by-large-tests' && $testData[$test]['size'] === 'medium') {
                         $lineCss = 'covered-by-medium-tests';
                     } elseif ($testData[$test]['size'] === 'small') {
@@ -772,7 +855,7 @@ final class File extends Renderer
                 );
             }
 
-            $lines .= $this->renderLine($singleLineTemplate, $line, $codeLines[$line - 1] ?? '', $trClass, $popover);
+            $lines .= $this->renderLine($singleLineTemplate, $line, $codeLines[$line - 1], $trClass, $popover);
         }
 
         if ($lines === '') {
@@ -790,7 +873,7 @@ final class File extends Renderer
 
         $coverageData = $node->functionCoverageData();
         $testData     = $node->testData();
-        $codeLines    = $this->highlightedSourceFor($node);
+        $codeLines    = $this->loadFile($node->pathAsString());
         $paths        = '';
 
         ksort($coverageData);
@@ -823,7 +906,6 @@ final class File extends Renderer
     /**
      * @param array<int, ProcessedBranchCoverageData> $branches
      * @param list<string>                            $codeLines
-     * @param array<non-empty-string, TestType>       $testData
      */
     private function renderPathLines(ProcessedPathCoverageData $path, array $branches, array $codeLines, array $testData): string
     {
@@ -834,12 +916,6 @@ final class File extends Renderer
         $first = true;
 
         foreach ($path->path as $branchId) {
-            if (!isset($branches[$branchId])) {
-                // @codeCoverageIgnoreStart
-                continue;
-                // @codeCoverageIgnoreEnd
-            }
-
             if ($first) {
                 $first = false;
             } else {
@@ -873,12 +949,6 @@ final class File extends Renderer
                     }
 
                     foreach ($path->hit as $test) {
-                        if (!isset($testData[$test])) {
-                            // @codeCoverageIgnoreStart
-                            continue;
-                            // @codeCoverageIgnoreEnd
-                        }
-
                         if ($lineCss === 'covered-by-large-tests' && $testData[$test]['size'] === 'medium') {
                             $lineCss = 'covered-by-medium-tests';
                         } elseif ($testData[$test]['size'] === 'small') {
@@ -901,7 +971,7 @@ final class File extends Renderer
                     );
                 }
 
-                $lines .= $this->renderLine($singleLineTemplate, $line, $codeLines[$line - 1] ?? '', $trClass, $popover);
+                $lines .= $this->renderLine($singleLineTemplate, $line, $codeLines[$line - 1], $trClass, $popover);
             }
         }
 
@@ -928,19 +998,112 @@ final class File extends Renderer
         return $template->render();
     }
 
+    /**
+     * @param non-empty-string $file
+     *
+     * @return list<string>
+     */
+    private function loadFile(string $file): array
+    {
+        if (isset(self::$formattedSourceCache[$file])) {
+            return self::$formattedSourceCache[$file];
+        }
+
+        $buffer              = file_get_contents($file);
+        $tokens              = token_get_all($buffer, TOKEN_PARSE);
+        $result              = [''];
+        $i                   = 0;
+        $stringFlag          = false;
+        $fileEndsWithNewLine = str_ends_with($buffer, "\n");
+
+        unset($buffer);
+
+        foreach ($tokens as $j => $token) {
+            if (is_string($token)) {
+                if ($token === '"' && $tokens[$j - 1] !== '\\') {
+                    $result[$i] .= sprintf(
+                        '<span class="string">%s</span>',
+                        htmlspecialchars($token, self::HTML_SPECIAL_CHARS_FLAGS),
+                    );
+
+                    $stringFlag = !$stringFlag;
+                } else {
+                    $result[$i] .= sprintf(
+                        '<span class="keyword">%s</span>',
+                        htmlspecialchars($token, self::HTML_SPECIAL_CHARS_FLAGS),
+                    );
+                }
+
+                continue;
+            }
+
+            [$token, $value] = $token;
+
+            $value = str_replace(
+                ["\t", ' '],
+                ['&nbsp;&nbsp;&nbsp;&nbsp;', '&nbsp;'],
+                htmlspecialchars($value, self::HTML_SPECIAL_CHARS_FLAGS),
+            );
+
+            if ($value === "\n") {
+                $result[++$i] = '';
+            } else {
+                $lines = explode("\n", $value);
+
+                foreach ($lines as $jj => $line) {
+                    $line = trim($line);
+
+                    if ($line !== '') {
+                        if ($stringFlag) {
+                            $colour = 'string';
+                        } else {
+                            $colour = 'default';
+
+                            if ($this->isInlineHtml($token)) {
+                                $colour = 'html';
+                            } elseif ($this->isComment($token)) {
+                                $colour = 'comment';
+                            } elseif ($this->isKeyword($token)) {
+                                $colour = 'keyword';
+                            }
+                        }
+
+                        $result[$i] .= sprintf(
+                            '<span class="%s">%s</span>',
+                            $colour,
+                            $line,
+                        );
+                    }
+
+                    if (isset($lines[$jj + 1])) {
+                        $result[++$i] = '';
+                    }
+                }
+            }
+        }
+
+        if ($fileEndsWithNewLine) {
+            unset($result[count($result) - 1]);
+        }
+
+        self::$formattedSourceCache[$file] = $result;
+
+        return $result;
+    }
+
     private function abbreviateClassName(string $className): string
     {
         $tmp = explode('\\', $className);
 
         if (count($tmp) > 1) {
-            return sprintf(
+            $className = sprintf(
                 '<abbr title="%s">%s</abbr>',
-                $this->escapeHtml($className),
-                $this->escapeHtml(array_pop($tmp)),
+                $className,
+                array_pop($tmp),
             );
         }
 
-        return $this->escapeHtml($className);
+        return $className;
     }
 
     private function abbreviateMethodName(string $methodName): string
@@ -948,15 +1111,12 @@ final class File extends Renderer
         $parts = explode('->', $methodName);
 
         if (count($parts) === 2) {
-            return $this->abbreviateClassName($parts[0]) . '->' . $this->escapeHtml($parts[1]);
+            return $this->abbreviateClassName($parts[0]) . '->' . $parts[1];
         }
 
-        return $this->escapeHtml($methodName);
+        return $methodName;
     }
 
-    /**
-     * @param TestType $testData
-     */
     private function createPopoverContentForTest(string $test, array $testData): string
     {
         $testCSS = '';
@@ -983,5 +1143,20 @@ final class File extends Renderer
             $testCSS,
             htmlspecialchars($test, self::HTML_SPECIAL_CHARS_FLAGS),
         );
+    }
+
+    private function isComment(int $token): bool
+    {
+        return $token === T_COMMENT || $token === T_DOC_COMMENT;
+    }
+
+    private function isInlineHtml(int $token): bool
+    {
+        return $token === T_INLINE_HTML;
+    }
+
+    private function isKeyword(int $token): bool
+    {
+        return isset(self::KEYWORD_TOKENS[$token]);
     }
 }

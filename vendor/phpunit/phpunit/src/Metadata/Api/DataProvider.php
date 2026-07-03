@@ -23,7 +23,6 @@ use PHPUnit\Event\Code\TestMethod;
 use PHPUnit\Framework\InvalidDataProviderException;
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Metadata\DataProvider as DataProviderMetadata;
-use PHPUnit\Metadata\DataProviderClosure as DataProviderClosureMetadata;
 use PHPUnit\Metadata\MetadataCollection;
 use PHPUnit\Metadata\Parser\Registry as MetadataRegistry;
 use PHPUnit\Metadata\TestWith;
@@ -48,23 +47,22 @@ final readonly class DataProvider
      */
     public function providedData(string $className, string $methodName): ?array
     {
-        $metadataCollection  = MetadataRegistry::parser()->forMethod($className, $methodName);
-        $dataProvider        = $metadataCollection->isDataProvider();
-        $dataProviderClosure = $metadataCollection->isDataProviderClosure();
-        $testWith            = $metadataCollection->isTestWith();
+        $metadataCollection = MetadataRegistry::parser()->forMethod($className, $methodName);
+        $dataProvider       = $metadataCollection->isDataProvider();
+        $testWith           = $metadataCollection->isTestWith();
 
-        if ($dataProvider->isEmpty() && $dataProviderClosure->isEmpty() && $testWith->isEmpty()) {
+        if ($dataProvider->isEmpty() && $testWith->isEmpty()) {
             return null;
         }
 
         $testMethod = new ReflectionMethod($className, $methodName);
 
-        if ($dataProvider->isNotEmpty() || $dataProviderClosure->isNotEmpty()) {
+        if ($dataProvider->isNotEmpty()) {
             if ($testWith->isNotEmpty()) {
                 $this->triggerWarningForMixingOfDataProviderAndTestWith($testMethod);
             }
 
-            return $this->dataProvidedByMethods($className, $testMethod, $dataProvider, $dataProviderClosure);
+            return $this->dataProvidedByMethods($className, $testMethod, $dataProvider);
         }
 
         return $this->dataProvidedByMetadata($testMethod, $testWith);
@@ -77,7 +75,7 @@ final readonly class DataProvider
      *
      * @return array<ProvidedData>
      */
-    private function dataProvidedByMethods(string $testClassName, ReflectionMethod $testMethod, MetadataCollection $dataProvider, MetadataCollection $dataProviderClosure): array
+    private function dataProvidedByMethods(string $testClassName, ReflectionMethod $testMethod, MetadataCollection $dataProvider): array
     {
         $testMethodValueObject = new Event\Code\ClassMethod(
             $testClassName,
@@ -86,7 +84,6 @@ final readonly class DataProvider
 
         $methodsCalled                = [];
         $result                       = [];
-        $skipWhenEmpty                = false;
         $testMethodNumberOfParameters = $testMethod->getNumberOfParameters();
         $testMethodIsNonVariadic      = !$testMethod->isVariadic();
 
@@ -96,10 +93,6 @@ final readonly class DataProvider
             $providerLabel         = $_dataProvider->className() . '::' . $_dataProvider->methodName();
             $dataProviderMethod    = new Event\Code\ClassMethod($_dataProvider->className(), $_dataProvider->methodName());
             $validateArgumentCount = $testMethodIsNonVariadic && $_dataProvider->validateArgumentCount();
-
-            if ($_dataProvider->skipWhenEmpty()) {
-                $skipWhenEmpty = true;
-            }
 
             Event\Facade::emitter()->dataProviderMethodCalled(
                 $testMethodValueObject,
@@ -187,12 +180,6 @@ final readonly class DataProvider
                         );
                     }
 
-                    if ($key === '') {
-                        throw new InvalidDataProviderException(
-                            'The key must not be an empty string',
-                        );
-                    }
-
                     if (!is_array($value)) {
                         throw new InvalidDataProviderException(
                             sprintf(
@@ -246,117 +233,12 @@ final readonly class DataProvider
             }
         }
 
-        foreach ($dataProviderClosure as $_dataProvider) {
-            assert($_dataProvider instanceof DataProviderClosureMetadata);
-
-            $providerLabel         = sprintf('callable provided to %s::%s()', $testClassName, $testMethod->getName());
-            $validateArgumentCount = $testMethodIsNonVariadic && $_dataProvider->validateArgumentCount();
-
-            try {
-                $callable = $_dataProvider->closure();
-                $data     = $callable();
-
-                if (!is_iterable($data)) {
-                    throw new InvalidDataProviderException(
-                        'Data Provider callable does not return an iterable',
-                    );
-                }
-            } catch (Throwable $e) {
-                Event\Facade::emitter()->dataProviderMethodFinished(
-                    $testMethodValueObject,
-                    ...$methodsCalled,
-                );
-
-                throw InvalidDataProviderException::forException($e, $providerLabel);
-            }
-
-            foreach ($data as $key => $value) {
-                if (!is_int($key) && !is_string($key)) {
-                    Event\Facade::emitter()->dataProviderMethodFinished(
-                        $testMethodValueObject,
-                        ...$methodsCalled,
-                    );
-
-                    throw new InvalidDataProviderException(
-                        sprintf(
-                            'The key must be an integer or a string, %s given',
-                            get_debug_type($key),
-                        ),
-                    );
-                }
-
-                if ($key === '') {
-                    Event\Facade::emitter()->dataProviderMethodFinished(
-                        $testMethodValueObject,
-                        ...$methodsCalled,
-                    );
-
-                    throw new InvalidDataProviderException(
-                        'The key must not be an empty string',
-                    );
-                }
-
-                if (!is_array($value)) {
-                    Event\Facade::emitter()->dataProviderMethodFinished(
-                        $testMethodValueObject,
-                        ...$methodsCalled,
-                    );
-
-                    throw new InvalidDataProviderException(
-                        sprintf(
-                            'Data set %s provided by %s is invalid, expected array but got %s',
-                            $this->formatKey($key),
-                            $providerLabel,
-                            get_debug_type($value),
-                        ),
-                    );
-                }
-
-                if ($validateArgumentCount && $testMethodNumberOfParameters < count($value)) {
-                    $this->triggerWarningForArgumentCount(
-                        $testMethod,
-                        $this->formatKey($key),
-                        $providerLabel,
-                        count($value),
-                        $testMethodNumberOfParameters,
-                    );
-                }
-
-                if (is_int($key)) {
-                    $result[] = new ProvidedData($providerLabel, $value);
-
-                    continue;
-                }
-
-                if (array_key_exists($key, $result)) {
-                    Event\Facade::emitter()->dataProviderMethodFinished(
-                        $testMethodValueObject,
-                        ...$methodsCalled,
-                    );
-
-                    throw new InvalidDataProviderException(
-                        sprintf(
-                            'The key "%s" has already been defined by provider %s',
-                            $key,
-                            $result[$key]->label(),
-                        ),
-                    );
-                }
-
-                $result[$key] = new ProvidedData($providerLabel, $value);
-            }
-        }
-
         Event\Facade::emitter()->dataProviderMethodFinished(
             $testMethodValueObject,
             ...$methodsCalled,
         );
 
         if ($result === []) {
-            if ($skipWhenEmpty) {
-                return [];
-            }
-
             throw new InvalidDataProviderException(
                 'Empty data set provided by data provider',
             );
@@ -370,21 +252,15 @@ final readonly class DataProvider
      */
     private function dataProvidedByMetadata(ReflectionMethod $testMethod, MetadataCollection $testWith): array
     {
-        $result                       = [];
-        $testMethodNumberOfParameters = $testMethod->getNumberOfParameters();
-        $testMethodIsNonVariadic      = !$testMethod->isVariadic();
-        $autoIncrementKey             = 0;
+        $result = [];
 
         foreach ($testWith as $i => $_testWith) {
             assert($_testWith instanceof TestWith);
 
             $providerLabel = sprintf('TestWith#%s attribute', $i);
-            $value         = $_testWith->data();
 
             if ($_testWith->hasName()) {
                 $key = $_testWith->name();
-
-                assert($key !== null);
 
                 if (array_key_exists($key, $result)) {
                     throw new InvalidDataProviderException(
@@ -396,18 +272,24 @@ final readonly class DataProvider
                     );
                 }
 
-                $formattedKey = $this->formatKey($key);
+                $result[$key] = new ProvidedData($providerLabel, $_testWith->data());
             } else {
-                $key          = null;
-                $formattedKey = $this->formatKey($autoIncrementKey);
+                $result[] = new ProvidedData($providerLabel, $_testWith->data());
             }
+        }
+
+        $testMethodNumberOfParameters = $testMethod->getNumberOfParameters();
+        $testMethodIsNonVariadic      = !$testMethod->isVariadic();
+
+        foreach ($result as $key => $providedData) {
+            $value = $providedData->value();
 
             if (!is_array($value)) {
                 throw new InvalidDataProviderException(
                     sprintf(
                         'Data set %s provided by %s is invalid, expected array but got %s',
-                        $formattedKey,
-                        $providerLabel,
+                        $this->formatKey($key),
+                        $providedData->label(),
                         get_debug_type($value),
                     ),
                 );
@@ -416,18 +298,11 @@ final readonly class DataProvider
             if ($testMethodIsNonVariadic && $testMethodNumberOfParameters < count($value)) {
                 $this->triggerWarningForArgumentCount(
                     $testMethod,
-                    $formattedKey,
-                    $providerLabel,
+                    $this->formatKey($key),
+                    $providedData->label(),
                     count($value),
                     $testMethodNumberOfParameters,
                 );
-            }
-
-            if ($key === null) {
-                $result[] = new ProvidedData($providerLabel, $value);
-                $autoIncrementKey++;
-            } else {
-                $result[$key] = new ProvidedData($providerLabel, $value);
             }
         }
 
@@ -468,17 +343,11 @@ final readonly class DataProvider
 
     private function testValueObject(ReflectionMethod $method): TestMethod
     {
-        $file = $method->getFileName();
-        $line = $method->getStartLine();
-
-        assert($file !== false && $file !== '');
-        assert($line !== false);
-
         return new TestMethod(
             $method->getDeclaringClass()->getName(),
             $method->getName(),
-            $file,
-            $line,
+            $method->getFileName(),
+            $method->getStartLine(),
             Event\Code\TestDoxBuilder::fromClassNameAndMethodName(
                 $method->getDeclaringClass()->getName(),
                 $method->getName(),

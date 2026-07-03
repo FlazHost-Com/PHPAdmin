@@ -12,17 +12,13 @@ namespace SebastianBergmann\CodeCoverage\Report\Xml;
 use function basename;
 use function dirname;
 use DOMDocument;
-use SebastianBergmann\CodeCoverage\Util\EnsuresUtf8;
 use XMLWriter;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final class Report extends File
 {
-    use EnsuresUtf8;
     private readonly string $name;
     private readonly string $sha1;
 
@@ -46,8 +42,8 @@ final class Report extends File
         $xmlWriter->startElement('phpunit');
         $xmlWriter->writeAttribute('xmlns', Facade::XML_NAMESPACE);
         $xmlWriter->startElement('file');
-        $xmlWriter->writeAttribute('name', $this->ensureUtf8(basename($this->name)));
-        $xmlWriter->writeAttribute('path', $this->ensureUtf8(dirname($this->name)));
+        $xmlWriter->writeAttribute('name', basename($this->name));
+        $xmlWriter->writeAttribute('path', dirname($this->name));
         $xmlWriter->writeAttribute('hash', $this->sha1);
     }
 

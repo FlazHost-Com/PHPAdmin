@@ -11,20 +11,16 @@ namespace SebastianBergmann\CodeCoverage\Report\Xml;
 
 use function sprintf;
 use SebastianBergmann\CodeCoverage\CodeCoverage;
-use SebastianBergmann\CodeCoverage\Util\EnsuresUtf8;
 use XMLWriter;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
  *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
  * @phpstan-import-type TestType from CodeCoverage
  */
 final readonly class Tests
 {
-    use EnsuresUtf8;
-    private XMLWriter $xmlWriter;
+    private readonly XMLWriter $xmlWriter;
 
     public function __construct(XMLWriter $xmlWriter)
     {
@@ -38,7 +34,7 @@ final readonly class Tests
     {
         $this->xmlWriter->startElement('test');
 
-        $this->xmlWriter->writeAttribute('name', $this->ensureUtf8($test));
+        $this->xmlWriter->writeAttribute('name', $test);
         $this->xmlWriter->writeAttribute('size', $result['size']);
         $this->xmlWriter->writeAttribute('status', $result['status']);
         $this->xmlWriter->writeAttribute('time', sprintf('%F', $result['time']));

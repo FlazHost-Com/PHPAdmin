@@ -9,8 +9,6 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use SebastianBergmann\FileFilter\Filter;
-
 /**
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
@@ -19,33 +17,35 @@ use SebastianBergmann\FileFilter\Filter;
 final class SourceFilter
 {
     private static ?self $instance = null;
-    private readonly Filter $filter;
+
+    /**
+     * @var array<non-empty-string, true>
+     */
+    private readonly array $map;
 
     public static function instance(): self
     {
-        if (self::$instance !== null) {
-            return self::$instance;
+        if (self::$instance === null) {
+            self::$instance = new self(
+                (new SourceMapper)->map(
+                    Registry::get()->source(),
+                ),
+            );
         }
-
-        self::$instance = new self(
-            (new FileFilterMapper)->map(
-                Registry::get()->source(),
-            ),
-        );
 
         return self::$instance;
     }
 
-    public function __construct(Filter $filter)
+    /**
+     * @param array<non-empty-string, true> $map
+     */
+    public function __construct(array $map)
     {
-        $this->filter = $filter;
+        $this->map = $map;
     }
 
-    /**
-     * @param non-empty-string $path
-     */
     public function includes(string $path): bool
     {
-        return $this->filter->accepts($path);
+        return isset($this->map[$path]);
     }
 }

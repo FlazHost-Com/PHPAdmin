@@ -11,7 +11,6 @@ namespace PHPUnit\Framework\Constraint;
 
 use const PREG_SPLIT_DELIM_CAPTURE;
 use function array_map;
-use function assert;
 use function preg_quote;
 use function preg_replace;
 use function preg_split;
@@ -22,9 +21,6 @@ use PHPUnit\Framework\ExpectationFailedException;
  */
 final class LogicalNot extends UnaryOperator
 {
-    /**
-     * @return non-empty-string
-     */
     public static function negate(string $string): string
     {
         $positives = [
@@ -71,12 +67,6 @@ final class LogicalNot extends UnaryOperator
             PREG_SPLIT_DELIM_CAPTURE,
         );
 
-        if ($segments === false) {
-            // @codeCoverageIgnoreStart
-            $segments = [$string];
-            // @codeCoverageIgnoreEnd
-        }
-
         $negatedString = '';
 
         foreach ($segments as $index => $segment) {
@@ -89,9 +79,6 @@ final class LogicalNot extends UnaryOperator
 
             $negatedString .= preg_replace($positives, $negatives, $segment);
         }
-
-        assert($negatedString !== null);
-        assert($negatedString !== '');
 
         return $negatedString;
     }
@@ -122,7 +109,7 @@ final class LogicalNot extends UnaryOperator
      */
     protected function matches(mixed $other): bool
     {
-        return $this->constraint()->evaluate($other, '', true) === false;
+        return !$this->constraint()->evaluate($other, '', true);
     }
 
     /**

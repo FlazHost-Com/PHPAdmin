@@ -13,9 +13,6 @@ use function sprintf;
 use RuntimeException;
 use SebastianBergmann\CodeCoverage\Exception;
 
-/**
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
- */
 final class XdebugVersionNotSupportedException extends RuntimeException implements Exception
 {
     /**

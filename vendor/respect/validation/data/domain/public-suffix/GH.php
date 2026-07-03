@@ -1,16 +1,12 @@
 <?php declare(strict_types=1);
-// SPDX-FileCopyrightText: 2007–22 Mozilla Foundation
+// Copyright (c) https://publicsuffix.org
 // SPDX-License-Identifier: MPL-2.0-no-copyleft-exception
 return [
-    'exceptions' => [],
-    'rules' => [
-        'BIZ.GH',
-        'COM.GH',
-        'EDU.GH',
-        'GOV.GH',
-        'MIL.GH',
-        'NET.GH',
-        'ORG.GH',
-    ],
-    'wildcards' => [],
+    'BIZ.GH',
+    'COM.GH',
+    'EDU.GH',
+    'GOV.GH',
+    'MIL.GH',
+    'NET.GH',
+    'ORG.GH',
 ];

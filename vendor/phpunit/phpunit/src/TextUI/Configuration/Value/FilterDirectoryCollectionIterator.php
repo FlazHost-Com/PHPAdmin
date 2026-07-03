@@ -9,7 +9,7 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use function assert;
+use function count;
 use Iterator;
 
 /**
@@ -41,7 +41,7 @@ final class FilterDirectoryCollectionIterator implements Iterator
 
     public function valid(): bool
     {
-        return isset($this->directories[$this->position]);
+        return $this->position < count($this->directories);
     }
 
     /**
@@ -54,8 +54,6 @@ final class FilterDirectoryCollectionIterator implements Iterator
 
     public function current(): FilterDirectory
     {
-        assert(isset($this->directories[$this->position]));
-
         return $this->directories[$this->position];
     }
 

@@ -68,7 +68,7 @@ EOT,
         }
 
 EOT,
-                    ($property->hasSetterType() ? $property->setterType() : $property->type())->asString(),
+                    ($property->setterType() ?? $property->type())->asString(),
                     $className,
                     $property->name(),
                 );

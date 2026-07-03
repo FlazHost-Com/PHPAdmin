@@ -13,8 +13,6 @@ namespace PHPUnit\TextUI\Configuration;
  * @no-named-arguments Parameter names are not covered by the backward compatibility promise for PHPUnit
  *
  * @immutable
- *
- * @phpstan-type DeprecationTriggers array{functions: list<non-empty-string>, methods: list<non-empty-string>, ignoreUndefinedTriggers: bool}
  */
 final readonly class Source
 {
@@ -24,9 +22,9 @@ final readonly class Source
     private ?string $baseline;
     private bool $ignoreBaseline;
     private FilterDirectoryCollection $includeDirectories;
-    private FilterFileCollection $includeFiles;
+    private FileCollection $includeFiles;
     private FilterDirectoryCollection $excludeDirectories;
-    private FilterFileCollection $excludeFiles;
+    private FileCollection $excludeFiles;
     private bool $restrictNotices;
     private bool $restrictWarnings;
     private bool $ignoreSuppressionOfDeprecations;
@@ -42,21 +40,15 @@ final readonly class Source
     private bool $identifyIssueTrigger;
 
     /**
-     * @var DeprecationTriggers
+     * @var array{functions: list<non-empty-string>, methods: list<non-empty-string>}
      */
     private array $deprecationTriggers;
 
     /**
-     * @var list<non-empty-string>
+     * @param ?non-empty-string                                                         $baseline
+     * @param array{functions: list<non-empty-string>, methods: list<non-empty-string>} $deprecationTriggers
      */
-    private array $issueTriggerResolvers;
-
-    /**
-     * @param ?non-empty-string      $baseline
-     * @param DeprecationTriggers    $deprecationTriggers
-     * @param list<non-empty-string> $issueTriggerResolvers
-     */
-    public function __construct(?string $baseline, bool $ignoreBaseline, FilterDirectoryCollection $includeDirectories, FilterFileCollection $includeFiles, FilterDirectoryCollection $excludeDirectories, FilterFileCollection $excludeFiles, bool $restrictNotices, bool $restrictWarnings, bool $ignoreSuppressionOfDeprecations, bool $ignoreSuppressionOfPhpDeprecations, bool $ignoreSuppressionOfErrors, bool $ignoreSuppressionOfNotices, bool $ignoreSuppressionOfPhpNotices, bool $ignoreSuppressionOfWarnings, bool $ignoreSuppressionOfPhpWarnings, array $deprecationTriggers, bool $ignoreSelfDeprecations, bool $ignoreDirectDeprecations, bool $ignoreIndirectDeprecations, bool $identifyIssueTrigger, array $issueTriggerResolvers = [])
+    public function __construct(?string $baseline, bool $ignoreBaseline, FilterDirectoryCollection $includeDirectories, FileCollection $includeFiles, FilterDirectoryCollection $excludeDirectories, FileCollection $excludeFiles, bool $restrictNotices, bool $restrictWarnings, bool $ignoreSuppressionOfDeprecations, bool $ignoreSuppressionOfPhpDeprecations, bool $ignoreSuppressionOfErrors, bool $ignoreSuppressionOfNotices, bool $ignoreSuppressionOfPhpNotices, bool $ignoreSuppressionOfWarnings, bool $ignoreSuppressionOfPhpWarnings, array $deprecationTriggers, bool $ignoreSelfDeprecations, bool $ignoreDirectDeprecations, bool $ignoreIndirectDeprecations, bool $identifyIssueTrigger)
     {
         $this->baseline                           = $baseline;
         $this->ignoreBaseline                     = $ignoreBaseline;
@@ -78,7 +70,6 @@ final readonly class Source
         $this->ignoreDirectDeprecations           = $ignoreDirectDeprecations;
         $this->ignoreIndirectDeprecations         = $ignoreIndirectDeprecations;
         $this->identifyIssueTrigger               = $identifyIssueTrigger;
-        $this->issueTriggerResolvers              = $issueTriggerResolvers;
     }
 
     /**
@@ -116,7 +107,7 @@ final readonly class Source
         return $this->includeDirectories;
     }
 
-    public function includeFiles(): FilterFileCollection
+    public function includeFiles(): FileCollection
     {
         return $this->includeFiles;
     }
@@ -126,7 +117,7 @@ final readonly class Source
         return $this->excludeDirectories;
     }
 
-    public function excludeFiles(): FilterFileCollection
+    public function excludeFiles(): FileCollection
     {
         return $this->excludeFiles;
     }
@@ -182,7 +173,7 @@ final readonly class Source
     }
 
     /**
-     * @return DeprecationTriggers
+     * @return array{functions: list<non-empty-string>, methods: list<non-empty-string>}
      */
     public function deprecationTriggers(): array
     {
@@ -207,13 +198,5 @@ final readonly class Source
     public function identifyIssueTrigger(): bool
     {
         return $this->identifyIssueTrigger;
-    }
-
-    /**
-     * @return list<non-empty-string>
-     */
-    public function issueTriggerResolvers(): array
-    {
-        return $this->issueTriggerResolvers;
     }
 }

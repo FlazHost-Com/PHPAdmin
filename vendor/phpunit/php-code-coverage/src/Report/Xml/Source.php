@@ -16,8 +16,6 @@ use XMLWriter;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final readonly class Source
 {
@@ -31,6 +29,6 @@ final readonly class Source
     public function setSourceCode(string $source): void
     {
         $tokens = (new Tokenizer)->parse($source);
-        new XMLSerializer(new NamespaceUri(Facade::XML_NAMESPACE))->appendToWriter($this->xmlWriter, $tokens);
+        (new XMLSerializer(new NamespaceUri(Facade::XML_NAMESPACE)))->appendToWriter($this->xmlWriter, $tokens);
     }
 }

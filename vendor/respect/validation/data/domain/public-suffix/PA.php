@@ -1,20 +1,16 @@
 <?php declare(strict_types=1);
-// SPDX-FileCopyrightText: 2007–22 Mozilla Foundation
+// Copyright (c) https://publicsuffix.org
 // SPDX-License-Identifier: MPL-2.0-no-copyleft-exception
 return [
-    'exceptions' => [],
-    'rules' => [
-        'ABO.PA',
-        'AC.PA',
-        'COM.PA',
-        'EDU.PA',
-        'GOB.PA',
-        'ING.PA',
-        'MED.PA',
-        'NET.PA',
-        'NOM.PA',
-        'ORG.PA',
-        'SLD.PA',
-    ],
-    'wildcards' => [],
+    'ABO.PA',
+    'AC.PA',
+    'COM.PA',
+    'EDU.PA',
+    'GOB.PA',
+    'ING.PA',
+    'MED.PA',
+    'NET.PA',
+    'NOM.PA',
+    'ORG.PA',
+    'SLD.PA',
 ];

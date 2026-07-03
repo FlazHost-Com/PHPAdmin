@@ -10,14 +10,11 @@
 namespace SebastianBergmann\CodeCoverage\Driver;
 
 use function sprintf;
-use SebastianBergmann\CodeCoverage\BranchCoverageNotSupportedException;
+use SebastianBergmann\CodeCoverage\BranchAndPathCoverageNotSupportedException;
 use SebastianBergmann\CodeCoverage\Data\RawCodeCoverageData;
-use SebastianBergmann\CodeCoverage\PathCoverageNotSupportedException;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 abstract class Driver
 {
@@ -44,62 +41,54 @@ abstract class Driver
     /**
      * @see http://xdebug.org/docs/code_coverage
      */
-    public const int BRANCH_HIT      = 1;
-    private Granularity $granularity = Granularity::Line;
+    public const int BRANCH_HIT                = 1;
+    private bool $collectBranchAndPathCoverage = false;
 
-    public function granularity(): Granularity
+    public function canCollectBranchAndPathCoverage(): bool
     {
-        return $this->granularity;
+        return false;
+    }
+
+    public function collectsBranchAndPathCoverage(): bool
+    {
+        return $this->collectBranchAndPathCoverage;
     }
 
     /**
-     * @throws BranchCoverageNotSupportedException
-     * @throws PathCoverageNotSupportedException
+     * @throws BranchAndPathCoverageNotSupportedException
      */
-    public function setGranularity(Granularity $granularity): void
+    public function enableBranchAndPathCoverage(): void
     {
-        if (($granularity === Granularity::LineAndBranch || $granularity === Granularity::LineBranchAndPath) &&
-            !$this->canCollectBranchCoverage()) {
-            throw new BranchCoverageNotSupportedException(
-                sprintf('%s does not support branch coverage', $this->nameAndVersion()),
+        if (!$this->canCollectBranchAndPathCoverage()) {
+            throw new BranchAndPathCoverageNotSupportedException(
+                sprintf(
+                    '%s does not support branch and path coverage',
+                    $this->nameAndVersion(),
+                ),
             );
         }
 
-        if ($granularity === Granularity::LineBranchAndPath && !$this->canCollectPathCoverage()) {
-            throw new PathCoverageNotSupportedException(
-                sprintf('%s does not support path coverage', $this->nameAndVersion()),
-            );
-        }
-
-        $this->granularity = $granularity;
+        $this->collectBranchAndPathCoverage = true;
     }
 
-    /**
-     * @return non-empty-string
-     */
-    abstract public function name(): string;
-
-    /**
-     * @return non-empty-string
-     */
-    abstract public function version(): string;
-
-    public function nameAndVersion(): string
+    public function disableBranchAndPathCoverage(): void
     {
-        return $this->name() . ' ' . $this->version();
+        $this->collectBranchAndPathCoverage = false;
     }
+
+    public function isPcov(): bool
+    {
+        return false;
+    }
+
+    public function isXdebug(): bool
+    {
+        return false;
+    }
+
+    abstract public function nameAndVersion(): string;
 
     abstract public function start(): void;
 
     abstract public function stop(): RawCodeCoverageData;
-
-    protected function canCollectBranchCoverage(): bool
-    {
-        return false;
-    }
-
-    protected function canCollectPathCoverage(): bool
-    {
-        return false;
-    }
 }

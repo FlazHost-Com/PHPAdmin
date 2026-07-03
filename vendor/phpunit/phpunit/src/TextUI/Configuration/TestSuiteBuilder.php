@@ -9,17 +9,13 @@
  */
 namespace PHPUnit\TextUI\Configuration;
 
-use const DIRECTORY_SEPARATOR;
 use const PHP_EOL;
 use function assert;
 use function count;
-use function dirname;
-use function file;
 use function is_dir;
 use function is_file;
 use function realpath;
 use function str_ends_with;
-use function trim;
 use PHPUnit\Event\Facade as EventFacade;
 use PHPUnit\Exception;
 use PHPUnit\Framework\TestSuite;
@@ -45,50 +41,17 @@ final readonly class TestSuiteBuilder
      */
     public function build(Configuration $configuration): TestSuite
     {
-        if ($configuration->hasCliArguments() || $configuration->hasTestFilesFile()) {
+        if ($configuration->hasCliArguments()) {
             $arguments = [];
 
-            if ($configuration->hasCliArguments()) {
-                foreach ($configuration->cliArguments() as $cliArgument) {
-                    $argument = realpath($cliArgument);
+            foreach ($configuration->cliArguments() as $cliArgument) {
+                $argument = realpath($cliArgument);
 
-                    if ($argument === false) {
-                        throw new TestFileNotFoundException($cliArgument);
-                    }
-
-                    $arguments[] = $argument;
-                }
-            }
-
-            if ($configuration->hasTestFilesFile()) {
-                if (!is_file($configuration->testFilesFile())) {
-                    throw new RuntimeException('Cannot read from ' . $configuration->testFilesFile());
+                if (!$argument) {
+                    throw new TestFileNotFoundException($cliArgument);
                 }
 
-                $directory = dirname($configuration->testFilesFile()) . DIRECTORY_SEPARATOR;
-
-                $fileLines = file($configuration->testFilesFile());
-
-                // @codeCoverageIgnoreStart
-                if ($fileLines === false) {
-                    throw new RuntimeException('Cannot read from ' . $configuration->testFilesFile());
-                }
-                // @codeCoverageIgnoreEnd
-
-                foreach ($fileLines as $file) {
-                    $file     = trim($file);
-                    $argument = realpath($file);
-
-                    if ($argument === false) {
-                        $argument = realpath($directory . $file);
-                    }
-
-                    if ($argument === false) {
-                        throw new TestFileNotFoundException($file);
-                    }
-
-                    $arguments[] = $argument;
-                }
+                $arguments[] = $argument;
             }
 
             if (count($arguments) === 1) {

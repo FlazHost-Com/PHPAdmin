@@ -12,48 +12,31 @@ namespace SebastianBergmann\CodeCoverage\Report\Html;
 use function count;
 use function sprintf;
 use function str_repeat;
-use function usort;
 use SebastianBergmann\CodeCoverage\FileCouldNotBeWrittenException;
 use SebastianBergmann\CodeCoverage\Node\AbstractNode as Node;
 use SebastianBergmann\CodeCoverage\Node\Directory as DirectoryNode;
-use SebastianBergmann\CodeCoverage\Node\File as FileNode;
 use SebastianBergmann\Template\Exception;
 use SebastianBergmann\Template\Template;
 
 /**
  * @internal This class is not covered by the backward compatibility promise for phpunit/php-code-coverage
- *
- * @no-named-arguments Parameter names are not covered by the backward compatibility promise for phpunit/php-code-coverage
  */
 final class Directory extends Renderer
 {
     public function render(DirectoryNode $node, string $file): void
     {
-        $template = new Template($this->templateNameForTier('directory'), '{{', '}}');
+        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'directory_branch.html' : 'directory.html');
+        $template     = new Template($templateName, '{{', '}}');
 
         $this->setCommonTemplateVariables($template, $node);
 
         $items = $this->renderItem($node, true);
 
-        $directories = $node->directories();
-
-        usort(
-            $directories,
-            static fn (DirectoryNode $a, DirectoryNode $b) => $a->name() <=> $b->name(),
-        );
-
-        foreach ($directories as $item) {
+        foreach ($node->directories() as $item) {
             $items .= $this->renderItem($item);
         }
 
-        $files = $node->files();
-
-        usort(
-            $files,
-            static fn (FileNode $a, FileNode $b) => $a->name() <=> $b->name(),
-        );
-
-        foreach ($files as $item) {
+        foreach ($node->files() as $item) {
             $items .= $this->renderItem($item);
         }
 
@@ -78,27 +61,26 @@ final class Directory extends Renderer
     private function renderItem(Node $node, bool $total = false): string
     {
         $data = [
-            'numClasses'                        => $node->numberOfClassesAndTraits(),
-            'numTestedClasses'                  => $node->numberOfTestedClassesAndTraits(),
-            'numMethods'                        => $node->numberOfFunctionsAndMethods(),
-            'numTestedMethods'                  => $node->numberOfTestedFunctionsAndMethods(),
-            'linesExecutedPercent'              => $node->percentageOfExecutedLines()->asFloat(),
-            'linesExecutedPercentAsString'      => $node->percentageOfExecutedLines()->asString(),
-            'numExecutedLines'                  => $node->numberOfExecutedLines(),
-            'numExecutableLines'                => $node->numberOfExecutableLines(),
-            'branchesExecutedPercent'           => $node->percentageOfExecutedBranches()->asFloat(),
-            'branchesExecutedPercentAsString'   => $node->percentageOfExecutedBranches()->asString(),
-            'numExecutedBranches'               => $node->numberOfExecutedBranches(),
-            'numExecutableBranches'             => $node->numberOfExecutableBranches(),
-            'pathsExecutedPercent'              => $node->percentageOfExecutedPaths()->asFloat(),
-            'pathsExecutedPercentAsString'      => $node->percentageOfExecutedPaths()->asString(),
-            'numExecutedPaths'                  => $node->numberOfExecutedPaths(),
-            'numExecutablePaths'                => $node->numberOfExecutablePaths(),
-            'testedMethodsPercent'              => $node->percentageOfTestedFunctionsAndMethods()->asFloat(),
-            'testedMethodsPercentAsString'      => $node->percentageOfTestedFunctionsAndMethods()->asString(),
-            'testedClassesPercent'              => $node->percentageOfTestedClassesAndTraits()->asFloat(),
-            'testedClassesPercentAsString'      => $node->percentageOfTestedClassesAndTraits()->asString(),
-            'numFilesWithoutBranchCoverageData' => $node->numberOfFilesWithoutBranchCoverageData(),
+            'numClasses'                      => $node->numberOfClassesAndTraits(),
+            'numTestedClasses'                => $node->numberOfTestedClassesAndTraits(),
+            'numMethods'                      => $node->numberOfFunctionsAndMethods(),
+            'numTestedMethods'                => $node->numberOfTestedFunctionsAndMethods(),
+            'linesExecutedPercent'            => $node->percentageOfExecutedLines()->asFloat(),
+            'linesExecutedPercentAsString'    => $node->percentageOfExecutedLines()->asString(),
+            'numExecutedLines'                => $node->numberOfExecutedLines(),
+            'numExecutableLines'              => $node->numberOfExecutableLines(),
+            'branchesExecutedPercent'         => $node->percentageOfExecutedBranches()->asFloat(),
+            'branchesExecutedPercentAsString' => $node->percentageOfExecutedBranches()->asString(),
+            'numExecutedBranches'             => $node->numberOfExecutedBranches(),
+            'numExecutableBranches'           => $node->numberOfExecutableBranches(),
+            'pathsExecutedPercent'            => $node->percentageOfExecutedPaths()->asFloat(),
+            'pathsExecutedPercentAsString'    => $node->percentageOfExecutedPaths()->asString(),
+            'numExecutedPaths'                => $node->numberOfExecutedPaths(),
+            'numExecutablePaths'              => $node->numberOfExecutablePaths(),
+            'testedMethodsPercent'            => $node->percentageOfTestedFunctionsAndMethods()->asFloat(),
+            'testedMethodsPercentAsString'    => $node->percentageOfTestedFunctionsAndMethods()->asString(),
+            'testedClassesPercent'            => $node->percentageOfTestedClassesAndTraits()->asFloat(),
+            'testedClassesPercentAsString'    => $node->percentageOfTestedClassesAndTraits()->asString(),
         ];
 
         if ($total) {
@@ -115,20 +97,13 @@ final class Directory extends Renderer
                     $name,
                 );
                 $data['icon'] = sprintf('<img src="%s_icons/file-directory.svg" class="octicon" />', $up);
-            } elseif ($this->hasPathCoverage) {
+            } elseif ($this->hasBranchCoverage) {
                 $data['name'] = sprintf(
                     '%s <a class="small" href="%s.html">[line]</a> <a class="small" href="%s_branch.html">[branch]</a> <a class="small" href="%s_path.html">[path]</a>',
                     $name,
                     $name,
                     $name,
                     $name,
-                );
-            } elseif ($this->hasBranchCoverage) {
-                $data['name'] = sprintf(
-                    '%s <a class="small" href="%s.html">[line]</a> <a class="small" href="%s_branch.html">[branch]</a>',
-                    $node->name(),
-                    $node->name(),
-                    $node->name(),
                 );
             } else {
                 $data['name'] = sprintf(
@@ -139,8 +114,10 @@ final class Directory extends Renderer
             }
         }
 
+        $templateName = $this->templatePath . ($this->hasBranchCoverage ? 'directory_item_branch.html' : 'directory_item.html');
+
         return $this->renderItemTemplate(
-            new Template($this->templateNameForTier('directory_item'), '{{', '}}'),
+            new Template($templateName, '{{', '}}'),
             $data,
         );
     }
