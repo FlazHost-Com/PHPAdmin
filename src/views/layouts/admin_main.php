@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Main admin layout wrapper.
  *
@@ -20,6 +21,7 @@
  *   $content = ob_get_clean();
  *   render(APP_ROOT . '/src/views/layouts/admin_main.php', array_merge($layoutData, ['content' => $content]));
  */
+
 declare(strict_types=1);
 
 $_layoutDir = __DIR__;

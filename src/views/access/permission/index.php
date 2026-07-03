@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Permission index view.
  *
@@ -7,6 +8,7 @@
  *   $paginate array{items,total,page,per_page,last_page}
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 /** @var array<string,string> $filter */
@@ -105,7 +107,7 @@ $pageUrl = static function (int $p) use ($filter): string {
       <tbody>
         <form id="selection" method="post" action="<?= e(route('admin.v1.access.permission.delete_selected')) ?>">
           <?= csrf_field() ?>
-          <?php foreach ($paginate['datas'] as $i => $item): ?>
+          <?php foreach ($paginate['datas'] as $i => $item) : ?>
           <tr>
             <td><input name="selected[]" value="<?= e($item->id) ?>" type="checkbox" /></td>
             <td><?= ($i + 1) + ($_pd['page_size'] * ($_pd['current_page'] - 1)) ?></td>
@@ -113,11 +115,11 @@ $pageUrl = static function (int $p) use ($filter): string {
             <td><span class="badge text-bg-primary"><?= e((string)($item->guard_name ?? 'web')) ?></span></td>
             <td><?= e((string)($item->method ?? '')) ?></td>
             <td class="text-left">
-              <?php if ($item->status === 'Active'): ?>
+                <?php if ($item->status === 'Active') : ?>
                 <i class="fas fa-check-circle text-green-500 text-xl" title="Active"></i>
-              <?php else: ?>
+                <?php else : ?>
                 <i class="fas fa-times-circle text-red-500 text-xl" title="Inactive"></i>
-              <?php endif; ?>
+                <?php endif; ?>
             </td>
             <td><?= e((string)($item->desc ?? '')) ?></td>
             <td class="text-center">
@@ -129,9 +131,9 @@ $pageUrl = static function (int $p) use ($filter): string {
                   </a>
                   <div class="dropdown-divider"></div>
                   <?php
-                  $deleteUrl = route('admin.v1.access.permission.delete', ['id' => $item->id])
+                    $deleteUrl = route('admin.v1.access.permission.delete', ['id' => $item->id])
                       . '?_method=DELETE&_csrf=' . urlencode($_csrf ?? '');
-                  ?>
+                    ?>
                   <form method="post" action="<?= e($deleteUrl) ?>" class="m-0">
                     <button type="submit" data-confirm="Confirm Delete" class="dropdown-item danger">
                       <i class="fas fa-trash fa-fw"></i> Delete
@@ -149,15 +151,15 @@ $pageUrl = static function (int $p) use ($filter): string {
     <div class="d-flex justify-content-end mt-4">
       <nav>
         <ul class="pagination">
-          <?php if ($_pd['current_page'] > 1): ?>
+          <?php if ($_pd['current_page'] > 1) : ?>
             <li class="page-item"><a class="page-link" href="<?= e($pageUrl($_pd['current_page'] - 1)) ?>">Previous</a></li>
           <?php endif; ?>
-          <?php for ($p = 1; $p <= $_pd['total_page']; $p++): ?>
+          <?php for ($p = 1; $p <= $_pd['total_page']; $p++) : ?>
             <li class="page-item <?= $p === $_pd['current_page'] ? 'active' : '' ?>">
               <a class="page-link" href="<?= e($pageUrl($p)) ?>"><?= $p ?></a>
             </li>
           <?php endfor; ?>
-          <?php if ($_pd['current_page'] < $_pd['total_page'] && $_pd['total_page'] > 0): ?>
+          <?php if ($_pd['current_page'] < $_pd['total_page'] && $_pd['total_page'] > 0) : ?>
             <li class="page-item"><a class="page-link" href="<?= e($pageUrl($_pd['current_page'] + 1)) ?>">Next</a></li>
           <?php endif; ?>
         </ul>

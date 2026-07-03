@@ -20,10 +20,11 @@ use PHPAdmin\Modules\Setting\Contracts\ISettingService;
 class SettingController
 {
     public function __construct(
-        private readonly ISettingService     $settingService,
-        private readonly IFeTemplateService  $feTemplateService,
-        private readonly AppConfig           $config
-    ) {}
+        private readonly ISettingService $settingService,
+        private readonly IFeTemplateService $feTemplateService,
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web: GET ─────────────────────────────────────────────────────────────
 
@@ -102,7 +103,7 @@ class SettingController
             $this->settingService->update($data);
 
             // Download template HTML jika slug baru dipilih dan belum ter-cache lokal.
-            $slug = $data['fe_template'] ?? '';
+            $slug = $data['fe_template'];
             if ($slug !== '') {
                 try {
                     $this->feTemplateService->ensure($slug);

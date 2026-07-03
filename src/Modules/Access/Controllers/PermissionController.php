@@ -19,8 +19,9 @@ class PermissionController
 {
     public function __construct(
         private readonly IPermissionService $permissionService,
-        private readonly AppConfig          $config
-    ) {}
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web: GET ────────────────────────────────────────────────────────────
 
@@ -220,7 +221,11 @@ class PermissionController
         $filter  = $_GET;
         $perPage = max(1, (int)($filter['q_page_size'] ?? 10));
         $page    = max(1, (int)($filter['q_page']      ?? 1));
-        json_response(['status' => true, 'message' => 'Success', 'data' => $this->permissionService->index($filter, $perPage, $page)]);
+        json_response([
+            'status'  => true,
+            'message' => 'Success',
+            'data'    => $this->permissionService->index($filter, $perPage, $page),
+        ]);
     }
 
     /**

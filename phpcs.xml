@@ -5,4 +5,11 @@
     <rule ref="PSR12"/>
     <exclude-pattern>*/vendor/*</exclude-pattern>
     <exclude-pattern>*/storage/*</exclude-pattern>
+    <!-- View templates: long markup lines are expected; templates are side-effect files. -->
+    <rule ref="Generic.Files.LineLength">
+        <exclude-pattern>*/src/views/*</exclude-pattern>
+    </rule>
+    <rule ref="PSR1.Files.SideEffects">
+        <exclude-pattern>*/src/views/*</exclude-pattern>
+    </rule>
 </ruleset>

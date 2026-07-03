@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'phpadmin/phpadmin',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '91842b0427c1851b1212a9f95b0f20894427bb8b',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -332,9 +332,9 @@
             'dev_requirement' => false,
         ),
         'phpadmin/phpadmin' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '91842b0427c1851b1212a9f95b0f20894427bb8b',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

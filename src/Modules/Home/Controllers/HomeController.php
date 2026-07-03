@@ -22,9 +22,10 @@ class HomeController
 {
     public function __construct(
         private readonly IFeTemplateService $templateService,
-        private readonly ISettingService    $settingService,
-        private readonly AppConfig          $config
-    ) {}
+        private readonly ISettingService $settingService,
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web handlers ─────────────────────────────────────────────────────────
 

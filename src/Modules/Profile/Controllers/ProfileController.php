@@ -22,8 +22,9 @@ class ProfileController
 {
     public function __construct(
         private readonly IProfileService $profileService,
-        private readonly AppConfig       $config
-    ) {}
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web handlers ─────────────────────────────────────────────────────────
 

@@ -22,7 +22,9 @@ class OssService
 {
     private ?S3Client $client = null;
 
-    public function __construct(private readonly AppConfig $config) {}
+    public function __construct(private readonly AppConfig $config)
+    {
+    }
 
     public function isConfigured(): bool
     {
@@ -37,7 +39,10 @@ class OssService
             return $this->client;
         }
         if (!$this->isConfigured()) {
-            throw new AppException('Storage belum dikonfigurasi (STORAGE_ACCESS_KEY_ID atau STORAGE_BUCKET kosong).', 500);
+            throw new AppException(
+                'Storage belum dikonfigurasi (STORAGE_ACCESS_KEY_ID atau STORAGE_BUCKET kosong).',
+                500
+            );
         }
         $args = [
             'version'     => 'latest',

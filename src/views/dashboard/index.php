@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Dashboard index view — replicates NodeAdmin dashboard exactly.
  *
@@ -9,6 +10,7 @@
  *   $themeName  string
  *   $currentUser \PHPAdmin\Modules\Access\Models\User|null
  */
+
 declare(strict_types=1);
 
 /** @var array{users:int,roles:int,permissions:int} $stats */
@@ -20,7 +22,7 @@ declare(strict_types=1);
 <div class="flex items-center justify-between mb-2">
   <div>
     <h1 class="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
-    <p class="text-sm text-gray-600">Selamat datang kembali, <?= e($currentUser?->name ?? 'Admin') ?>! Berikut ringkasan hari ini.</p>
+    <p class="text-sm text-gray-600">Selamat datang kembali, <?= e($currentUser !== null ? $currentUser->name : 'Admin') ?>! Berikut ringkasan hari ini.</p>
   </div>
   <span class="text-sm text-gray-500" id="dash-date"></span>
 </div>
@@ -153,7 +155,7 @@ declare(strict_types=1);
     ];
     ?>
     <div class="space-y-3">
-      <?php foreach ($topProducts as $x): ?>
+      <?php foreach ($topProducts as $x) : ?>
       <div class="flex items-center p-4 border border-gray-100 rounded-xl hover:bg-gray-50 hover:shadow-md transition-all group">
         <div class="flex items-center w-4/5">
           <div class="relative flex-shrink-0 mr-3">
@@ -258,8 +260,8 @@ declare(strict_types=1);
           ['no' => 2, 'id' => '#12346', 'cust' => 'Jane Smith',   'bg' => '10B981', 'prod' => 'Smart Watch',        'amt' => '$199.99', 'st' => 'Processing', 'stc' => 'bg-yellow-100 text-yellow-800', 'date' => '2024-01-14'],
           ['no' => 3, 'id' => '#12347', 'cust' => 'Mike Johnson', 'bg' => 'F59E0B', 'prod' => 'Gaming Mouse',       'amt' => '$79.99',  'st' => 'Shipped',    'stc' => 'bg-blue-100 text-blue-800',    'date' => '2024-01-13'],
         ];
-        foreach ($orders as $o):
-        ?>
+        foreach ($orders as $o) :
+            ?>
         <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
           <td class="py-3 px-4"><input type="checkbox" class="row-checkbox w-4 h-4 rounded" onchange="updateSelectAll()"></td>
           <td class="py-3 px-4 text-gray-500 font-medium"><?= (int)$o['no'] ?></td>

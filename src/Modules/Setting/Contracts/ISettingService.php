@@ -55,11 +55,7 @@ interface ISettingService
      * @param  array<string,mixed> $filter
      * @param  string              $pinSlug  Active template slug to pin at top.
      * @return array{
-     *   items:     list<array{slug:string,name:string,category:string}>,
-     *   total:     int,
-     *   page:      int,
-     *   per_page:  int,
-     *   last_page: int,
+     *   datas: list<array{slug:string,name:string,category:string}>,
      *   paginate_data: array{total_data:int,page_size:int,current_page:int,total_page:int}
      * }
      */

@@ -13,7 +13,8 @@ class PermissionService implements IPermissionService
 {
     public function __construct(
         private readonly RouteRegistry $routeRegistry
-    ) {}
+    ) {
+    }
 
     // ─── IPermissionService ───────────────────────────────────────────────────
 
@@ -38,6 +39,7 @@ class PermissionService implements IPermissionService
         }
 
         $total = $query->count();
+        /** @var list<Permission> $items */
         $items = $query->orderBy('name')->forPage($page, $perPage)->get()->all();
 
         return [

@@ -97,7 +97,7 @@ class ProfileService implements IProfileService
             'timezone' => $user->timezone ?? 'UTC',
             'status'   => $user->status,
             'picture'  => $user->picture ?? '',
-            'roles'    => $user->roles?->pluck('name')->all() ?? [],
+            'roles'    => $user->roles->pluck('name')->all(),
         ];
     }
 }

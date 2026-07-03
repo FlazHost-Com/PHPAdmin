@@ -40,6 +40,7 @@ class UserService implements IUserService
         }
 
         $total = $query->count();
+        /** @var list<User> $items */
         $items = $query->orderBy('code')->forPage($page, $perPage)->get()->all();
 
         return [

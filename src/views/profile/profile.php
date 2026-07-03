@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Profile self-service view.
  *
@@ -9,6 +10,7 @@
  *   $timezones string[]
  *   $_csrf     string
  */
+
 declare(strict_types=1);
 
 /** @var array<string,mixed> $data */
@@ -20,8 +22,8 @@ declare(strict_types=1);
 <div class="tw-card p-6">
   <h2 class="text-lg font-bold mb-4" style="color:var(--primary)">User Form</h2>
   <?php
-  $updateUrl = route('admin.v1.profile.update') . '?_method=PUT';
-  ?>
+    $updateUrl = route('admin.v1.profile.update') . '?_method=PUT';
+    ?>
   <form method="POST" action="<?= e($updateUrl) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
@@ -39,7 +41,9 @@ declare(strict_types=1);
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= e((string)($data['name'] ?? '')) ?>">
-      <?php if (has_error('name')): ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php endif; ?>
+      <?php if (has_error('name')) :
+            ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Phone -->
@@ -48,7 +52,9 @@ declare(strict_types=1);
       <input id="phone" type="text"
              class="form-control <?= has_error('phone') ? 'is-invalid' : '' ?>"
              name="phone" value="<?= e((string)($data['phone'] ?? '')) ?>">
-      <?php if (has_error('phone')): ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php endif; ?>
+      <?php if (has_error('phone')) :
+            ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Email -->
@@ -57,7 +63,9 @@ declare(strict_types=1);
       <input id="email" type="email"
              class="form-control <?= has_error('email') ? 'is-invalid' : '' ?>"
              name="email" value="<?= e((string)($data['email'] ?? '')) ?>">
-      <?php if (has_error('email')): ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php endif; ?>
+      <?php if (has_error('email')) :
+            ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Timezone -->
@@ -65,11 +73,13 @@ declare(strict_types=1);
       <label for="timezone" class="form-label fw-semibold">Timezone</label>
       <select id="timezone" name="timezone"
               class="form-control <?= has_error('timezone') ? 'is-invalid' : '' ?>">
-        <?php foreach (($timezones ?? []) as $tz): ?>
+        <?php foreach (($timezones ?? []) as $tz) : ?>
           <option value="<?= e($tz) ?>" <?= (string)($data['timezone'] ?? 'UTC') === $tz ? 'selected' : '' ?>><?= e($tz) ?></option>
         <?php endforeach; ?>
       </select>
-      <?php if (has_error('timezone')): ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php endif; ?>
+      <?php if (has_error('timezone')) :
+            ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Password (optional) -->
@@ -80,7 +90,9 @@ declare(strict_types=1);
       <input id="password" type="password"
              class="form-control <?= has_error('password') ? 'is-invalid' : '' ?>"
              name="password" value="" autocomplete="new-password">
-      <?php if (has_error('password')): ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php endif; ?>
+      <?php if (has_error('password')) :
+            ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Confirm Password -->
@@ -89,7 +101,9 @@ declare(strict_types=1);
       <input id="password_confirmation" type="password"
              class="form-control <?= has_error('password_confirmation') ? 'is-invalid' : '' ?>"
              name="password_confirmation" value="" autocomplete="new-password">
-      <?php if (has_error('password_confirmation')): ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php endif; ?>
+      <?php if (has_error('password_confirmation')) :
+            ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Status -->
@@ -100,7 +114,9 @@ declare(strict_types=1);
         <option value="Active"   <?= ($data['status'] ?? '') === 'Active'   ? 'selected' : '' ?>>Active</option>
         <option value="Inactive" <?= ($data['status'] ?? '') === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
       </select>
-      <?php if (has_error('status')): ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php endif; ?>
+      <?php if (has_error('status')) :
+            ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php
+      endif; ?>
     </div>
 
     <!-- Picture -->
@@ -117,7 +133,9 @@ declare(strict_types=1);
                class="form-control <?= has_error('picture') ? 'is-invalid' : '' ?>"
                onchange="previewImage(this, 'picturePreview')">
       </div>
-      <?php if (has_error('picture')): ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php endif; ?>
+      <?php if (has_error('picture')) :
+            ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php
+      endif; ?>
     </div>
 
     <button type="submit" class="btn btn-primary-tw px-4 py-2">

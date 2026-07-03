@@ -23,7 +23,8 @@ class SettingModule
 {
     public function __construct(
         private readonly AppConfig $config
-    ) {}
+    ) {
+    }
 
     public function register(RouteCollector $r, RouteRegistry $registry): void
     {
@@ -38,16 +39,25 @@ class SettingModule
 
     private function registerWebRoutes(RouteCollector $r, RouteRegistry $registry): void
     {
-        $r->addRoute('GET', '/admin/v1/setting',
-            [SettingController::class, 'index']);
+        $r->addRoute(
+            'GET',
+            '/admin/v1/setting',
+            [SettingController::class, 'index']
+        );
         $registry->register('admin.v1.setting.index', 'GET', '/admin/v1/setting');
 
-        $r->addRoute('PUT', '/admin/v1/setting/update',
-            [SettingController::class, 'update']);
+        $r->addRoute(
+            'PUT',
+            '/admin/v1/setting/update',
+            [SettingController::class, 'update']
+        );
         $registry->register('admin.v1.setting.update', 'PUT', '/admin/v1/setting/update');
 
-        $r->addRoute('GET', '/admin/v1/setting/fe-preview/{slug}',
-            [SettingController::class, 'fePreview']);
+        $r->addRoute(
+            'GET',
+            '/admin/v1/setting/fe-preview/{slug}',
+            [SettingController::class, 'fePreview']
+        );
         $registry->register('admin.v1.setting.fe_preview', 'GET', '/admin/v1/setting/fe-preview/{slug}');
     }
 
@@ -55,12 +65,18 @@ class SettingModule
 
     private function registerApiRoutes(RouteCollector $r, RouteRegistry $registry): void
     {
-        $r->addRoute('GET', '/api/v1/setting',
-            [SettingController::class, 'apiIndex']);
+        $r->addRoute(
+            'GET',
+            '/api/v1/setting',
+            [SettingController::class, 'apiIndex']
+        );
         $registry->register('api.v1.setting.index', 'GET', '/api/v1/setting');
 
-        $r->addRoute('PUT', '/api/v1/setting/update',
-            [SettingController::class, 'apiUpdate']);
+        $r->addRoute(
+            'PUT',
+            '/api/v1/setting/update',
+            [SettingController::class, 'apiUpdate']
+        );
         $registry->register('api.v1.setting.update', 'PUT', '/api/v1/setting/update');
     }
 }

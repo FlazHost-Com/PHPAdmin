@@ -16,7 +16,8 @@ class AuthService implements IAuthService
     public function __construct(
         private readonly AppConfig $config,
         private readonly Redis $redis
-    ) {}
+    ) {
+    }
 
     // ─── IAuthService ────────────────────────────────────────────────────────
 

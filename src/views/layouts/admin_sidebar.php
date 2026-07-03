@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin sidebar layout partial.
  *
@@ -6,6 +7,7 @@
  *   $setting     array<string,mixed>|null   app settings row
  *   $currentUser object|null
  */
+
 declare(strict_types=1);
 
 if (!function_exists('hasAccess')) {
@@ -81,9 +83,9 @@ $_settingCopyright = (string)($_settingArr['copyright'] ?? '');
     <a href="<?= route('admin.v1.dashboard.index') ?>"
        class="flex items-center gap-3 px-6 py-5 border-b border-white/10">
         <div class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center overflow-hidden shrink-0">
-            <?php if ($_settingLogo !== ''): ?>
+            <?php if ($_settingLogo !== '') : ?>
                 <img src="<?= e($_settingLogo) ?>" alt="logo" class="w-full h-full object-contain p-1">
-            <?php else: ?>
+            <?php else : ?>
                 <i class="fas fa-chart-line text-xl"></i>
             <?php endif; ?>
         </div>
@@ -99,7 +101,7 @@ $_settingCopyright = (string)($_settingArr['copyright'] ?? '');
             <span>Dashboard</span>
         </a>
 
-        <?php if (hasAccess('admin.v1.components.index', 'GET')): ?>
+        <?php if (hasAccess('admin.v1.components.index', 'GET')) : ?>
         <a href="<?= route('admin.v1.components.index') ?>"
            class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<?= sidebarNavActive('/admin/v1/components') ?>">
             <i class="fas fa-cubes w-5 text-center"></i>
@@ -112,31 +114,31 @@ $_settingCopyright = (string)($_settingArr['copyright'] ?? '');
             hasAccess('admin.v1.access.role.index', 'GET') ||
             hasAccess('admin.v1.access.user.index', 'GET') ||
             hasAccess('admin.v1.setting.index', 'GET')
-        ): ?>
+) : ?>
         <p class="px-4 pt-5 pb-2 text-xs uppercase tracking-wider text-white/70 font-bold">Maintenance</p>
 
-        <?php if (hasAccess('admin.v1.access.permission.index', 'GET')): ?>
+        <?php if (hasAccess('admin.v1.access.permission.index', 'GET')) : ?>
         <a href="<?= route('admin.v1.access.permission.index') ?>"
            class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<?= sidebarNavActive('/admin/v1/access/permission') ?>">
             <i class="fas fa-key w-5 text-center"></i><span>Permission</span>
         </a>
         <?php endif; ?>
 
-        <?php if (hasAccess('admin.v1.access.role.index', 'GET')): ?>
+        <?php if (hasAccess('admin.v1.access.role.index', 'GET')) : ?>
         <a href="<?= route('admin.v1.access.role.index') ?>"
            class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<?= sidebarNavActive('/admin/v1/access/role') ?>">
             <i class="fas fa-user-shield w-5 text-center"></i><span>Role</span>
         </a>
         <?php endif; ?>
 
-        <?php if (hasAccess('admin.v1.access.user.index', 'GET')): ?>
+        <?php if (hasAccess('admin.v1.access.user.index', 'GET')) : ?>
         <a href="<?= route('admin.v1.access.user.index') ?>"
            class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<?= sidebarNavActive('/admin/v1/access/user') ?>">
             <i class="fas fa-users w-5 text-center"></i><span>User</span>
         </a>
         <?php endif; ?>
 
-        <?php if (hasAccess('admin.v1.setting.index', 'GET')): ?>
+        <?php if (hasAccess('admin.v1.setting.index', 'GET')) : ?>
         <a href="<?= route('admin.v1.setting.index') ?>"
            class="nav-link-tw flex items-center gap-3 px-4 py-3 rounded-lg font-medium<?= sidebarNavActive('/admin/v1/setting') ?>">
             <i class="fas fa-cog w-5 text-center"></i><span>Setting</span>

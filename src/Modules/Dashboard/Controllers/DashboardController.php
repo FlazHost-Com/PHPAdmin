@@ -21,8 +21,9 @@ class DashboardController
 {
     public function __construct(
         private readonly IDashboardService $dashboardService,
-        private readonly AppConfig         $config
-    ) {}
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web ──────────────────────────────────────────────────────────────────
 

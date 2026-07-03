@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Full-width (auth) layout — no sidebar, no topbar.
  *
@@ -18,6 +19,7 @@
  *   $content = ob_get_clean();
  *   render(APP_ROOT . '/src/views/layouts/full_width.php', array_merge($layoutData, ['content' => $content]));
  */
+
 declare(strict_types=1);
 
 $_layoutDir = __DIR__;

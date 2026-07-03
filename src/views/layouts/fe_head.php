@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Front-end head layout partial.
  *
@@ -6,6 +7,7 @@
  *   $setting    array<string,mixed>   app settings (name, description, theme, ...)
  *   $pageTitle  string
  */
+
 declare(strict_types=1);
 
 $_siteName = e((string)($setting['name'] ?? 'PHPAdmin'));

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Permission create view.
  *
@@ -7,7 +8,9 @@
  *   $oldInput array<string,mixed>
  *   $_csrf    string
  */
+
 declare(strict_types=1);
+
 ?>
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-bold text-gray-800">Permission Management</h1>
@@ -23,7 +26,9 @@ declare(strict_types=1);
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= old('name') ?>">
-      <?php if (has_error('name')): ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php endif; ?>
+      <?php if (has_error('name')) :
+            ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -45,7 +50,9 @@ declare(strict_types=1);
         <option value="PATCH"  <?= old('method') === 'PATCH'  ? 'selected' : '' ?>>PATCH</option>
         <option value="DELETE" <?= old('method') === 'DELETE' ? 'selected' : '' ?>>DELETE</option>
       </select>
-      <?php if (has_error('method')): ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php endif; ?>
+      <?php if (has_error('method')) :
+            ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -53,7 +60,9 @@ declare(strict_types=1);
       <input id="desc" type="text"
              class="form-control <?= has_error('desc') ? 'is-invalid' : '' ?>"
              name="desc" value="<?= old('desc') ?>">
-      <?php if (has_error('desc')): ?><div class="invalid-feedback"><?= get_error('desc') ?></div><?php endif; ?>
+      <?php if (has_error('desc')) :
+            ?><div class="invalid-feedback"><?= get_error('desc') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-4">
@@ -63,7 +72,9 @@ declare(strict_types=1);
         <option value="Active"   <?= old('status', 'Active') === 'Active'   ? 'selected' : '' ?>>Active</option>
         <option value="Inactive" <?= old('status', 'Active') === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
       </select>
-      <?php if (has_error('status')): ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php endif; ?>
+      <?php if (has_error('status')) :
+            ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="d-flex gap-2">

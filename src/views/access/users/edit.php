@@ -1,4 +1,5 @@
 <?php
+
 /**
  * User edit view.
  *
@@ -10,6 +11,7 @@
  *   $timezones string[]
  *   $_csrf     string
  */
+
 declare(strict_types=1);
 
 /** @var \PHPAdmin\Modules\Access\Models\User $data */
@@ -21,8 +23,8 @@ declare(strict_types=1);
 <div class="tw-card p-6">
   <h2 class="text-lg font-bold mb-4" style="color:var(--primary)">User Form</h2>
   <?php
-  $updateUrl = route('admin.v1.access.user.update', ['id' => $data->id]) . '?_method=PUT';
-  ?>
+    $updateUrl = route('admin.v1.access.user.update', ['id' => $data->id]) . '?_method=PUT';
+    ?>
   <form method="POST" action="<?= e($updateUrl) ?>" enctype="multipart/form-data">
     <?= csrf_field() ?>
 
@@ -31,7 +33,9 @@ declare(strict_types=1);
       <input id="code" type="text"
              class="form-control <?= has_error('code') ? 'is-invalid' : '' ?>"
              name="code" value="<?= e((string)$data->code) ?>">
-      <?php if (has_error('code')): ?><div class="invalid-feedback"><?= get_error('code') ?></div><?php endif; ?>
+      <?php if (has_error('code')) :
+            ?><div class="invalid-feedback"><?= get_error('code') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -39,7 +43,9 @@ declare(strict_types=1);
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= e((string)$data->name) ?>">
-      <?php if (has_error('name')): ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php endif; ?>
+      <?php if (has_error('name')) :
+            ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -47,7 +53,9 @@ declare(strict_types=1);
       <input id="phone" type="text"
              class="form-control <?= has_error('phone') ? 'is-invalid' : '' ?>"
              name="phone" value="<?= e((string)($data->phone ?? '')) ?>">
-      <?php if (has_error('phone')): ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php endif; ?>
+      <?php if (has_error('phone')) :
+            ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -55,18 +63,22 @@ declare(strict_types=1);
       <input id="email" type="email"
              class="form-control <?= has_error('email') ? 'is-invalid' : '' ?>"
              name="email" value="<?= e((string)$data->email) ?>">
-      <?php if (has_error('email')): ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php endif; ?>
+      <?php if (has_error('email')) :
+            ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
       <label for="timezone" class="form-label fw-semibold">Timezone</label>
       <select id="timezone" name="timezone"
               class="form-control <?= has_error('timezone') ? 'is-invalid' : '' ?>">
-        <?php foreach (($timezones ?? []) as $tz): ?>
+        <?php foreach (($timezones ?? []) as $tz) : ?>
           <option value="<?= e($tz) ?>" <?= (string)($data->timezone ?? 'UTC') === $tz ? 'selected' : '' ?>><?= e($tz) ?></option>
         <?php endforeach; ?>
       </select>
-      <?php if (has_error('timezone')): ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php endif; ?>
+      <?php if (has_error('timezone')) :
+            ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -74,7 +86,9 @@ declare(strict_types=1);
       <input id="password" type="password"
              class="form-control <?= has_error('password') ? 'is-invalid' : '' ?>"
              name="password" value="">
-      <?php if (has_error('password')): ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php endif; ?>
+      <?php if (has_error('password')) :
+            ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -82,7 +96,9 @@ declare(strict_types=1);
       <input id="password_confirmation" type="password"
              class="form-control <?= has_error('password_confirmation') ? 'is-invalid' : '' ?>"
              name="password_confirmation" value="">
-      <?php if (has_error('password_confirmation')): ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php endif; ?>
+      <?php if (has_error('password_confirmation')) :
+            ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -92,7 +108,9 @@ declare(strict_types=1);
         <option value="Active"   <?= $data->status === 'Active'   ? 'selected' : '' ?>>Active</option>
         <option value="Inactive" <?= $data->status === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
       </select>
-      <?php if (has_error('status')): ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php endif; ?>
+      <?php if (has_error('status')) :
+            ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -106,7 +124,9 @@ declare(strict_types=1);
              class="form-control <?= has_error('picture') ? 'is-invalid' : '' ?>"
              name="picture" accept="image/*"
              onchange="previewImage(this, 'img-preview')">
-      <?php if (has_error('picture')): ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php endif; ?>
+      <?php if (has_error('picture')) :
+            ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -125,7 +145,9 @@ declare(strict_types=1);
       <input id="blocked_reason" type="text"
              class="form-control <?= has_error('blocked_reason') ? 'is-invalid' : '' ?>"
              name="blocked_reason" value="<?= e((string)($data->blocked_reason ?? '')) ?>">
-      <?php if (has_error('blocked_reason')): ?><div class="invalid-feedback"><?= get_error('blocked_reason') ?></div><?php endif; ?>
+      <?php if (has_error('blocked_reason')) :
+            ?><div class="invalid-feedback"><?= get_error('blocked_reason') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-4">
@@ -133,8 +155,8 @@ declare(strict_types=1);
       <div class="d-flex flex-wrap gap-3 p-2 rounded border <?= has_error('roles') ? 'border-danger' : '' ?>">
         <?php
         $assignedRoleIds = $data->roles->pluck('id')->all();
-        foreach (($roles ?? []) as $i => $role):
-        ?>
+        foreach (($roles ?? []) as $i => $role) :
+            ?>
           <label class="d-flex align-items-center gap-2">
             <input id="roles<?= $i ?>" type="checkbox" name="roles[]"
                    value="<?= e($role->id) ?>" class="w-4 h-4"

@@ -24,7 +24,13 @@ interface IFeCatalogService
      * Paginate the catalog with optional name/category filters.
      *
      * @param  array<string,mixed> $filter  Keys: q_name, q_category, q_page, q_page_size.
-     * @return array{items:list<array{slug:string,name:string,category:string}>, total:int, page:int, per_page:int, last_page:int}
+     * @return array{
+     *     items: list<array{slug:string,name:string,category:string}>,
+     *     total: int,
+     *     page: int,
+     *     per_page: int,
+     *     last_page: int
+     * }
      */
     public function paginate(array $filter): array;
 

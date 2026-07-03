@@ -14,7 +14,10 @@ interface IRoleService
      * Filters: q_name, q_status, q_desc.
      *
      * @param  array<string,mixed> $filters
-     * @return array{items: list<Role>, total: int, page: int, per_page: int, last_page: int}
+     * @return array{
+     *     datas: list<Role>,
+     *     paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int}
+     * }
      */
     public function index(array $filters, int $perPage, int $page): array;
 
@@ -54,7 +57,11 @@ interface IRoleService
      * Filters: q_name, q_status, q_desc.
      *
      * @param  array<string,mixed> $filters
-     * @return array{items: list<\PHPAdmin\Modules\Access\Models\Permission>, total: int, page: int, per_page: int, last_page: int, role: Role}
+     * @return array{
+     *     datas: list<\PHPAdmin\Modules\Access\Models\Permission>,
+     *     paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int},
+     *     role: Role
+     * }
      */
     public function getPermissions(string $roleId, array $filters, int $perPage, int $page): array;
 

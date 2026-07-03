@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Setting index view — exact PHP port of NodeAdmin setting/index.ejs.
  *
@@ -13,6 +14,7 @@
  *   $filter        array<string,mixed>  q_name/q_category/q_page_size/q_page
  *   $_csrf         string
  */
+
 declare(strict_types=1);
 
 /** @var array<string,mixed>  $data */
@@ -59,9 +61,9 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
     <p class="text-sm text-gray-500 mb-4">Pilih template — seluruh tampilan admin akan berubah warnanya setelah disimpan.</p>
 
     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
-      <?php foreach ($themes as $thName => $p):
-        $thActive = (((string)($data['theme'] ?? '')) ?: $themeName) === $thName;
-      ?>
+      <?php foreach ($themes as $thName => $p) :
+            $thActive = (((string)($data['theme'] ?? '')) ?: $themeName) === $thName;
+            ?>
         <label class="cursor-pointer block">
           <input type="radio" name="theme" value="<?= e($thName) ?>" class="sr-only theme-radio"
                  <?= $thActive ? 'checked' : '' ?>>
@@ -114,10 +116,10 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
         <label class="block text-xs text-gray-500 mb-1">Kategori</label>
         <select form="fe_search" name="q_category" class="form-control" style="min-width:200px">
           <option value="">Semua kategori</option>
-          <?php foreach ($feCategories as $cat): ?>
+          <?php foreach ($feCategories as $cat) : ?>
             <option value="<?= e($cat) ?>"
-              <?= ((string)($filter['q_category'] ?? '')) === $cat ? 'selected' : '' ?>>
-              <?= e($cat) ?>
+                <?= ((string)($filter['q_category'] ?? '')) === $cat ? 'selected' : '' ?>>
+                <?= e($cat) ?>
             </option>
           <?php endforeach; ?>
         </select>
@@ -132,7 +134,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       </a>
     </div>
 
-    <?php if (count($feTemplates) === 0): ?>
+    <?php if (count($feTemplates) === 0) : ?>
       <div class="text-center text-gray-400 py-10">
         <i class="fas fa-search fa-2x mb-2"></i>
         <p>Tidak ada template yang cocok dengan pencarian.</p>
@@ -143,10 +145,10 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <?php
         /** @var list<string> $feCachedSlugs */
         $feCachedSlugs = $feCachedSlugs ?? [];
-        foreach ($feTemplates as $t):
-          $tActive  = $feActive === $t['slug'];
-          $tCached  = in_array($t['slug'], $feCachedSlugs, true);
-      ?>
+        foreach ($feTemplates as $t) :
+            $tActive  = $feActive === $t['slug'];
+            $tCached  = in_array($t['slug'], $feCachedSlugs, true);
+            ?>
         <div class="fe-card block" data-slug="<?= e($t['slug']) ?>" data-cached="<?= $tCached ? '1' : '0' ?>">
           <div class="fe-swatch rounded-xl overflow-hidden border-2 transition <?= $tActive ? 'border-gray-900' : 'border-gray-300' ?>"
                style="box-shadow:0 2px 8px rgba(0,0,0,.12)">
@@ -168,7 +170,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
                 <span class="text-sm font-semibold text-gray-800 truncate"
                       title="<?= e($t['name']) ?>"><?= e($t['name']) ?></span>
                 <div class="flex items-center gap-1">
-                  <?php if ($tCached): ?>
+                  <?php if ($tCached) : ?>
                     <span class="text-xs text-green-600" title="Tersedia offline"><i class="fas fa-circle-check"></i></span>
                   <?php endif; ?>
                   <i class="fas fa-check-circle fe-check <?= $tActive ? '' : 'hidden' ?>"
@@ -185,7 +187,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
             </div>
           </div>
         </div>
-      <?php endforeach; ?>
+        <?php endforeach; ?>
     </div>
 
     <!-- Windowed pagination for the FE catalog -->
@@ -195,41 +197,41 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       $fromPage = max(1, $curPage - 2);
       $toPage   = min($totPage, $curPage + 2);
     ?>
-    <?php if ($totPage > 1): ?>
+    <?php if ($totPage > 1) : ?>
     <div class="d-flex justify-content-center mt-5">
       <nav>
         <ul class="pagination">
-          <?php if ($curPage > 1): ?>
+          <?php if ($curPage > 1) : ?>
             <li class="page-item">
               <a class="page-link" href="<?= e($feCatalogPageUrl($curPage - 1)) ?>">Previous</a>
             </li>
           <?php endif; ?>
 
-          <?php if ($fromPage > 1): ?>
+          <?php if ($fromPage > 1) : ?>
             <li class="page-item">
               <a class="page-link" href="<?= e($feCatalogPageUrl(1)) ?>">1</a>
             </li>
-            <?php if ($fromPage > 2): ?>
+                <?php if ($fromPage > 2) : ?>
               <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
-            <?php endif; ?>
+                <?php endif; ?>
           <?php endif; ?>
 
-          <?php for ($idx = $fromPage; $idx <= $toPage; $idx++): ?>
+          <?php for ($idx = $fromPage; $idx <= $toPage; $idx++) : ?>
             <li class="page-item <?= $idx === $curPage ? 'active' : '' ?>">
               <a class="page-link" href="<?= e($feCatalogPageUrl($idx)) ?>"><?= $idx ?></a>
             </li>
           <?php endfor; ?>
 
-          <?php if ($toPage < $totPage): ?>
-            <?php if ($toPage < $totPage - 1): ?>
+          <?php if ($toPage < $totPage) : ?>
+                <?php if ($toPage < $totPage - 1) : ?>
               <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
-            <?php endif; ?>
+                <?php endif; ?>
             <li class="page-item">
               <a class="page-link" href="<?= e($feCatalogPageUrl($totPage)) ?>"><?= $totPage ?></a>
             </li>
           <?php endif; ?>
 
-          <?php if ($curPage < $totPage): ?>
+          <?php if ($curPage < $totPage) : ?>
             <li class="page-item">
               <a class="page-link" href="<?= e($feCatalogPageUrl($curPage + 1)) ?>">Next</a>
             </li>
@@ -249,7 +251,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="initial" type="text"
              class="form-control <?= has_error('initial') ? 'is-invalid' : '' ?>"
              name="initial" value="<?= e((string)($data['initial'] ?? '')) ?>">
-      <?php if (has_error('initial')): ?>
+      <?php if (has_error('initial')) : ?>
         <div class="invalid-feedback"><?= get_error('initial') ?></div>
       <?php endif; ?>
     </div>
@@ -259,7 +261,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= e((string)($data['name'] ?? '')) ?>">
-      <?php if (has_error('name')): ?>
+      <?php if (has_error('name')) : ?>
         <div class="invalid-feedback"><?= get_error('name') ?></div>
       <?php endif; ?>
     </div>
@@ -269,7 +271,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <textarea id="description"
                 class="trumbowyg-editor form-control <?= has_error('description') ? 'is-invalid' : '' ?>"
                 name="description"><?= (string)($data['description'] ?? '') ?></textarea>
-      <?php if (has_error('description')): ?>
+      <?php if (has_error('description')) : ?>
         <div class="invalid-feedback"><?= get_error('description') ?></div>
       <?php endif; ?>
     </div>
@@ -286,7 +288,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
                name="icon" accept="image/*"
                onchange="previewImage(this,'preview-icon')">
       </div>
-      <?php if (has_error('icon')): ?>
+      <?php if (has_error('icon')) : ?>
         <div class="text-danger small mt-1"><?= get_error('icon') ?></div>
       <?php endif; ?>
     </div>
@@ -303,7 +305,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
                name="logo" accept="image/*"
                onchange="previewImage(this,'preview-logo')">
       </div>
-      <?php if (has_error('logo')): ?>
+      <?php if (has_error('logo')) : ?>
         <div class="text-danger small mt-1"><?= get_error('logo') ?></div>
       <?php endif; ?>
     </div>
@@ -320,7 +322,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
                name="login_image" accept="image/*"
                onchange="previewImage(this,'preview-login-image')">
       </div>
-      <?php if (has_error('login_image')): ?>
+      <?php if (has_error('login_image')) : ?>
         <div class="text-danger small mt-1"><?= get_error('login_image') ?></div>
       <?php endif; ?>
     </div>
@@ -330,7 +332,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="phone" type="text"
              class="form-control <?= has_error('phone') ? 'is-invalid' : '' ?>"
              name="phone" value="<?= e((string)($data['phone'] ?? '')) ?>">
-      <?php if (has_error('phone')): ?>
+      <?php if (has_error('phone')) : ?>
         <div class="invalid-feedback"><?= get_error('phone') ?></div>
       <?php endif; ?>
     </div>
@@ -340,7 +342,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="address" type="text"
              class="form-control <?= has_error('address') ? 'is-invalid' : '' ?>"
              name="address" value="<?= e((string)($data['address'] ?? '')) ?>">
-      <?php if (has_error('address')): ?>
+      <?php if (has_error('address')) : ?>
         <div class="invalid-feedback"><?= get_error('address') ?></div>
       <?php endif; ?>
     </div>
@@ -350,7 +352,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="email" type="email"
              class="form-control <?= has_error('email') ? 'is-invalid' : '' ?>"
              name="email" value="<?= e((string)($data['email'] ?? '')) ?>">
-      <?php if (has_error('email')): ?>
+      <?php if (has_error('email')) : ?>
         <div class="invalid-feedback"><?= get_error('email') ?></div>
       <?php endif; ?>
     </div>
@@ -360,7 +362,7 @@ $feActive = (string)(($data['fe_template'] ?? '') ?: 'agency-consulting-002-crea
       <input id="copyright" type="text"
              class="form-control <?= has_error('copyright') ? 'is-invalid' : '' ?>"
              name="copyright" value="<?= e((string)($data['copyright'] ?? '')) ?>">
-      <?php if (has_error('copyright')): ?>
+      <?php if (has_error('copyright')) : ?>
         <div class="invalid-feedback"><?= get_error('copyright') ?></div>
       <?php endif; ?>
     </div>

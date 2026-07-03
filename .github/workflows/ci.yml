@@ -10,7 +10,7 @@ jobs:
           php-version: '8.3'
           extensions: pdo,pdo_sqlite,gd
       - run: composer install --no-interaction --prefer-dist
-      - run: ./vendor/bin/phpstan analyse src --level=6 --no-progress
+      - run: ./vendor/bin/phpstan analyse src --level=6 --no-progress --memory-limit=1G
       - run: ./vendor/bin/phpcs src --standard=phpcs.xml -q
       - run: ./vendor/bin/phpunit --testdox
         env:

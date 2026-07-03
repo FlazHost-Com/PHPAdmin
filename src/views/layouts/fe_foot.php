@@ -1,11 +1,14 @@
 <?php
+
 /**
  * Front-end foot layout partial.
  *
  * Expected variables:
  *   $setting  array<string,mixed>
  */
+
 declare(strict_types=1);
+
 ?>
 <!-- Minimal vanilla JS: smooth scroll & mobile nav toggle -->
 <script>

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin topbar layout partial.
  *
@@ -6,6 +7,7 @@
  *   $currentUser  object|array|null   logged-in user
  *   $_csrf        string              CSRF token
  */
+
 declare(strict_types=1);
 
 if (is_object($currentUser ?? null)) {
@@ -39,12 +41,12 @@ if (is_object($currentUser ?? null)) {
     <div class="dropdown">
         <a class="flex items-center gap-2 no-underline cursor-pointer" href="#" data-toggle-dd>
             <span class="hidden lg:inline text-gray-500">Welcome, <?= e($_userName) ?></span>
-            <?php if ($_userPicture !== ''): ?>
+            <?php if ($_userPicture !== '') : ?>
             <img class="rounded-full"
                  style="width:38px;height:38px;object-fit:cover"
                  src="<?= e($_userPicture) ?>"
                  alt="user">
-            <?php else: ?>
+            <?php else : ?>
             <span class="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
                 <i class="fas fa-user"></i>
             </span>

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace PHPAdmin\Modules\Home;
 
 use FastRoute\RouteCollector;
-use PHPAdmin\Core\AppConfig;
 use PHPAdmin\Core\RouteRegistry;
 use PHPAdmin\Modules\Home\Controllers\HomeController;
 
@@ -21,10 +20,6 @@ use PHPAdmin\Modules\Home\Controllers\HomeController;
  */
 class HomeModule
 {
-    public function __construct(
-        private readonly AppConfig $config
-    ) {}
-
     public function register(RouteCollector $r, RouteRegistry $registry): void
     {
         // Root path

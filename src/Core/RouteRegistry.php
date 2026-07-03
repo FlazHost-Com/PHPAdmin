@@ -24,7 +24,9 @@ class RouteRegistry
      */
     private array $reverseMap = [];
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     public static function getInstance(): self
     {
@@ -136,9 +138,11 @@ class RouteRegistry
             if ($route['method'] !== $method) {
                 continue;
             }
-            $pattern = preg_replace('/\{[^}]+\}/', '[^/]+', $route['path']);
-            $pattern = '#^' . $pattern . '$#';
-            if ($pattern !== false && preg_match($pattern, $path)) {
+            $regex = preg_replace('/\{[^}]+\}/', '[^/]+', $route['path']);
+            if ($regex === null) {
+                continue;
+            }
+            if (preg_match('#^' . $regex . '$#', $path)) {
                 return $name;
             }
         }

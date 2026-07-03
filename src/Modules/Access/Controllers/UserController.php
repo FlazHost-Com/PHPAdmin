@@ -21,10 +21,11 @@ use PHPAdmin\Modules\Access\Models\User;
 class UserController
 {
     public function __construct(
-        private readonly IUserService  $userService,
-        private readonly IRoleService  $roleService,
-        private readonly AppConfig     $config
-    ) {}
+        private readonly IUserService $userService,
+        private readonly IRoleService $roleService,
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web: GET ────────────────────────────────────────────────────────────
 
@@ -355,7 +356,7 @@ class UserController
     /**
      * Buffer an access view and render it inside the admin_main layout.
      *
-     * @param array<string, mixed> $data
+     * @param array<string, mixed> $viewData
      */
     private function renderAdmin(string $viewFile, array $viewData = [], string $title = 'PHPAdmin'): void
     {

@@ -1,10 +1,12 @@
 <?php
+
 /**
  * Admin foot layout partial — JS section.
  *
  * Expected variables:
  *   $flash  array{success?: string, error?: string}
  */
+
 declare(strict_types=1);
 
 $_flashSuccess = (string)(($flash ?? [])['success'] ?? '');
@@ -243,12 +245,12 @@ $_flashError   = (string)(($flash ?? [])['error']   ?? '');
         };
 
         // ── Flash from PHP → Toast ────────────────────────────────────────────
-        <?php if ($_flashSuccess !== ''): ?>
+        <?php if ($_flashSuccess !== '') : ?>
         document.addEventListener('DOMContentLoaded', function () {
             Toast(<?= json_encode($_flashSuccess, JSON_UNESCAPED_UNICODE) ?>, 'success');
         });
         <?php endif; ?>
-        <?php if ($_flashError !== ''): ?>
+        <?php if ($_flashError !== '') : ?>
         document.addEventListener('DOMContentLoaded', function () {
             Toast(<?= json_encode($_flashError, JSON_UNESCAPED_UNICODE) ?>, 'error');
         });

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Auth — Reset password (OTP verification) view (inner content only).
  *
@@ -8,6 +9,7 @@
  *   $errors   array<string,string>
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 $_settingArr   = is_array($setting ?? null) ? $setting : (is_object($setting ?? null) ? (array)$setting : []);
@@ -17,8 +19,14 @@ $_flashError   = (string)(($flash ?? [])['error']     ?? '');
 $_flashSuccess = (string)(($flash ?? [])['success']   ?? '');
 $__errors      = $errors ?? [];
 
-function _rstErr(string $f, array $e): string  { return (string)($e[$f] ?? ''); }
-function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] !== '' ? ' is-invalid' : ''; }
+function _rstErr(string $f, array $e): string
+{
+    return (string)($e[$f] ?? '');
+}
+function _rstInv(string $f, array $e): string
+{
+    return isset($e[$f]) && $e[$f] !== '' ? ' is-invalid' : '';
+}
 ?>
 <div class="w-full max-w-5xl tw-card overflow-hidden grid md:grid-cols-2">
 
@@ -40,10 +48,10 @@ function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] 
         </div>
 
         <!-- Flash messages -->
-        <?php if ($_flashError !== ''): ?>
+        <?php if ($_flashError !== '') : ?>
             <div class="alert alert-danger"><?= e($_flashError) ?></div>
         <?php endif; ?>
-        <?php if ($_flashSuccess !== ''): ?>
+        <?php if ($_flashSuccess !== '') : ?>
             <div class="alert alert-success"><?= e($_flashSuccess) ?></div>
         <?php endif; ?>
 
@@ -65,7 +73,7 @@ function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] 
                        name="email"
                        value="<?= old('email') ?>"
                        autocomplete="email">
-                <?php if (_rstErr('email', $__errors) !== ''): ?>
+                <?php if (_rstErr('email', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_rstErr('email', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -78,7 +86,7 @@ function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] 
                        name="otp"
                        value="<?= old('otp') ?>"
                        autocomplete="one-time-code">
-                <?php if (_rstErr('otp', $__errors) !== ''): ?>
+                <?php if (_rstErr('otp', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_rstErr('otp', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -90,7 +98,7 @@ function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] 
                        class="form-control<?= _rstInv('password', $__errors) ?>"
                        name="password"
                        autocomplete="new-password">
-                <?php if (_rstErr('password', $__errors) !== ''): ?>
+                <?php if (_rstErr('password', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_rstErr('password', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -102,7 +110,7 @@ function _rstInv(string $f, array $e): string  { return isset($e[$f]) && $e[$f] 
                        class="form-control<?= _rstInv('password_confirmation', $__errors) ?>"
                        name="password_confirmation"
                        autocomplete="new-password">
-                <?php if (_rstErr('password_confirmation', $__errors) !== ''): ?>
+                <?php if (_rstErr('password_confirmation', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_rstErr('password_confirmation', $__errors)) ?></div>
                 <?php endif; ?>
             </div>

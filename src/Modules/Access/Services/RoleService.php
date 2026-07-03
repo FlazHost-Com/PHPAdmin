@@ -28,6 +28,7 @@ class RoleService implements IRoleService
         }
 
         $total = $query->count();
+        /** @var list<Role> $items */
         $items = $query->orderBy('name')->forPage($page, $perPage)->get()->all();
 
         return [
@@ -116,8 +117,11 @@ class RoleService implements IRoleService
 
         $total = $query->count();
 
+        /** @var \Illuminate\Database\Eloquent\Collection<int, Permission> $paged */
+        $paged = $query->orderBy('name')->forPage($page, $perPage)->get();
+
         /** @var list<Permission> $items */
-        $items = $query->orderBy('name')->forPage($page, $perPage)->get()
+        $items = $paged
             ->map(static function (Permission $perm) use ($assignedIds): Permission {
                 $perm->is_assigned = in_array($perm->id, $assignedIds, true);
                 return $perm;

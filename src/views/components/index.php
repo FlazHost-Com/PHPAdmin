@@ -1,4 +1,5 @@
 <?php
+
 /**
  * UI Components showcase view — replicates NodeAdmin components page exactly.
  *
@@ -7,6 +8,7 @@
  *   $themeName  string
  *   $currentUser \PHPAdmin\Modules\Access\Models\User|null
  */
+
 declare(strict_types=1);
 
 /** @var array{primary:string,secondary:string,light:string,dark:string} $theme */

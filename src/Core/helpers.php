@@ -92,7 +92,10 @@ if (!function_exists('paginate')) {
     /**
      * Create a standard NodeAdmin-shape pagination array.
      *
-     * @return array{datas: array<mixed>, paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int}}
+     * @return array{
+     *     datas: array<mixed>,
+     *     paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int}
+     * }
      */
     function paginate(array $items, int $total, int $page, int $perPage): array
     {
@@ -219,7 +222,8 @@ if (!function_exists('require_api_auth')) {
                             json_response(['status' => false, 'message' => 'Token revoked', 'data' => null], 401);
                             exit;
                         }
-                    } catch (\Throwable) {}
+                    } catch (\Throwable) {
+                    }
                 }
             }
             return $payload;

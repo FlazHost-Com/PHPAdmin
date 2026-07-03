@@ -14,7 +14,10 @@ interface IPermissionService
      * Filters: q_name, q_guard, q_method, q_status, q_desc.
      *
      * @param  array<string,mixed> $filters
-     * @return array{items: list<Permission>, total: int, page: int, per_page: int, last_page: int}
+     * @return array{
+     *     datas: list<Permission>,
+     *     paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int}
+     * }
      */
     public function index(array $filters, int $perPage, int $page): array;
 

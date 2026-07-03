@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Permission edit view.
  *
@@ -8,6 +9,7 @@
  *   $oldInput array<string,mixed>
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 /** @var \PHPAdmin\Modules\Access\Models\Permission $data */
@@ -27,7 +29,9 @@ $updateUrl = route('admin.v1.access.permission.update', ['id' => $data->id]) . '
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= e((string)$data->name) ?>">
-      <?php if (has_error('name')): ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php endif; ?>
+      <?php if (has_error('name')) :
+            ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -49,7 +53,9 @@ $updateUrl = route('admin.v1.access.permission.update', ['id' => $data->id]) . '
         <option value="PATCH"  <?= ($data->method ?? '') === 'PATCH'  ? 'selected' : '' ?>>PATCH</option>
         <option value="DELETE" <?= ($data->method ?? '') === 'DELETE' ? 'selected' : '' ?>>DELETE</option>
       </select>
-      <?php if (has_error('method')): ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php endif; ?>
+      <?php if (has_error('method')) :
+            ?><div class="invalid-feedback"><?= get_error('method') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -59,7 +65,9 @@ $updateUrl = route('admin.v1.access.permission.update', ['id' => $data->id]) . '
         <option value="Active"   <?= $data->status === 'Active'   ? 'selected' : '' ?>>Active</option>
         <option value="Inactive" <?= $data->status === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
       </select>
-      <?php if (has_error('status')): ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php endif; ?>
+      <?php if (has_error('status')) :
+            ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-4">
@@ -67,7 +75,9 @@ $updateUrl = route('admin.v1.access.permission.update', ['id' => $data->id]) . '
       <input id="desc" type="text"
              class="form-control <?= has_error('desc') ? 'is-invalid' : '' ?>"
              name="desc" value="<?= e((string)($data->desc ?? '')) ?>">
-      <?php if (has_error('desc')): ?><div class="invalid-feedback"><?= get_error('desc') ?></div><?php endif; ?>
+      <?php if (has_error('desc')) :
+            ?><div class="invalid-feedback"><?= get_error('desc') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="d-flex gap-2">

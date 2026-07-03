@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Auth — Login view (inner content only; wrapped by full_width.php layout).
  *
@@ -8,6 +9,7 @@
  *   $errors   array<string,string>   per-field validation errors
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 $_settingArr  = is_array($setting ?? null) ? $setting : (is_object($setting ?? null) ? (array)$setting : []);
@@ -36,10 +38,10 @@ $_flashSuccess = (string)(($flash  ?? [])['success']  ?? '');
         </div>
 
         <!-- Flash messages -->
-        <?php if ($_flashError !== ''): ?>
+        <?php if ($_flashError !== '') : ?>
             <div class="alert alert-danger"><?= e($_flashError) ?></div>
         <?php endif; ?>
-        <?php if ($_flashSuccess !== ''): ?>
+        <?php if ($_flashSuccess !== '') : ?>
             <div class="alert alert-success"><?= e($_flashSuccess) ?></div>
         <?php endif; ?>
 
@@ -48,12 +50,16 @@ $_flashSuccess = (string)(($flash  ?? [])['success']  ?? '');
         $__errors = $errors ?? [];
         $__emailErr = (string)($__errors['email'] ?? '');
         $__passErr  = (string)($__errors['password'] ?? '');
-        if ($__emailErr !== '' || $__passErr !== ''):
-        ?>
+        if ($__emailErr !== '' || $__passErr !== '') :
+            ?>
             <div class="alert alert-danger">
                 <ul class="mb-0 ps-3">
-                    <?php if ($__emailErr !== ''): ?><li><?= e($__emailErr) ?></li><?php endif; ?>
-                    <?php if ($__passErr  !== ''): ?><li><?= e($__passErr)  ?></li><?php endif; ?>
+                    <?php if ($__emailErr !== '') :
+                        ?><li><?= e($__emailErr) ?></li><?php
+                    endif; ?>
+                    <?php if ($__passErr  !== '') :
+                        ?><li><?= e($__passErr)  ?></li><?php
+                    endif; ?>
                 </ul>
             </div>
         <?php endif; ?>
@@ -77,7 +83,7 @@ $_flashSuccess = (string)(($flash  ?? [])['success']  ?? '');
                        name="email"
                        value="<?= old('email') ?>"
                        autocomplete="email">
-                <?php if ($__emailErr !== ''): ?>
+                <?php if ($__emailErr !== '') : ?>
                     <div class="invalid-feedback"><?= e($__emailErr) ?></div>
                 <?php endif; ?>
             </div>
@@ -90,7 +96,7 @@ $_flashSuccess = (string)(($flash  ?? [])['success']  ?? '');
                        placeholder="Password"
                        name="password"
                        autocomplete="current-password">
-                <?php if ($__passErr !== ''): ?>
+                <?php if ($__passErr !== '') : ?>
                     <div class="invalid-feedback"><?= e($__passErr) ?></div>
                 <?php endif; ?>
             </div>

@@ -72,7 +72,9 @@ class FeCatalogService implements IFeCatalogService
         $page     = max(1, (int)($filter['q_page']      ?? 1));
 
         $filtered = array_values(array_filter($all, static function (array $t) use ($qName, $qCat): bool {
-            $okName = $qName === '' || str_contains(strtolower($t['slug']), $qName) || str_contains(strtolower($t['name']), $qName);
+            $okName = $qName === ''
+                || str_contains(strtolower($t['slug']), $qName)
+                || str_contains(strtolower($t['name']), $qName);
             $okCat  = $qCat  === '' || $t['category'] === $qCat;
             return $okName && $okCat;
         }));
@@ -172,8 +174,8 @@ class FeCatalogService implements IFeCatalogService
 
         usort($items, static fn($a, $b) => $a['category'] <=> $b['category'] ?: $a['name'] <=> $b['name']);
 
-        /** @var list<array{slug:string,name:string,category:string}> */
-        return array_values($items);
+        /** @var list<array{slug:string,name:string,category:string}> $items */
+        return $items;
     }
 
     /**

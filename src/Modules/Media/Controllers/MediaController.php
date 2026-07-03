@@ -22,7 +22,8 @@ class MediaController
 {
     public function __construct(
         private readonly IMediaService $mediaService
-    ) {}
+    ) {
+    }
 
     // ─── Handlers ─────────────────────────────────────────────────────────────
 

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Default home landing page — native PHP view.
  *
@@ -8,6 +9,7 @@
  *   $setting    array<string,mixed>   app settings row
  *   $pageTitle  string
  */
+
 declare(strict_types=1);
 
 $_layoutDir = dirname(__DIR__, 2) . '/layouts';
@@ -276,19 +278,19 @@ include $_layoutDir . '/fe_head.php';
       <div>
         <h4 class="text-white font-semibold mb-4">Contact</h4>
         <ul class="space-y-2 text-sm">
-          <?php if ($_email): ?>
+          <?php if ($_email) : ?>
           <li class="flex items-center gap-2">
             <i class="fas fa-envelope w-4 text-indigo-400"></i>
             <a href="mailto:<?= $_email ?>" class="hover:text-white transition-colors no-underline"><?= $_email ?></a>
           </li>
           <?php endif; ?>
-          <?php if ($_phone): ?>
+          <?php if ($_phone) : ?>
           <li class="flex items-center gap-2">
             <i class="fas fa-phone w-4 text-indigo-400"></i>
             <span><?= $_phone ?></span>
           </li>
           <?php endif; ?>
-          <?php if ($_address): ?>
+          <?php if ($_address) : ?>
           <li class="flex items-start gap-2">
             <i class="fas fa-map-marker-alt w-4 text-indigo-400 mt-0.5"></i>
             <span><?= $_address ?></span>

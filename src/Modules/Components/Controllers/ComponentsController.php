@@ -20,7 +20,8 @@ class ComponentsController
 {
     public function __construct(
         private readonly AppConfig $config
-    ) {}
+    ) {
+    }
 
     // ─── Web ──────────────────────────────────────────────────────────────────
 

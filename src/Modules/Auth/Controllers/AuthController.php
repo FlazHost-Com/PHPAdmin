@@ -20,8 +20,9 @@ class AuthController
 {
     public function __construct(
         private readonly IAuthService $authService,
-        private readonly AppConfig    $config
-    ) {}
+        private readonly AppConfig $config
+    ) {
+    }
 
     // ─── Web: show forms ─────────────────────────────────────────────────────
 
@@ -298,7 +299,8 @@ class AuthController
                         $this->authService->logout('', $jti, $this->jwtTtlSeconds());
                     }
                 }
-            } catch (\Throwable) {}
+            } catch (\Throwable) {
+            }
         }
 
         json_response(['status' => true, 'message' => 'Logged out.', 'data' => null]);
@@ -365,7 +367,11 @@ class AuthController
 
         try {
             $this->authService->requestOtp($email);
-            json_response(['status' => true, 'message' => 'If that email is registered, an OTP has been sent.', 'data' => null]);
+            json_response([
+                'status'  => true,
+                'message' => 'If that email is registered, an OTP has been sent.',
+                'data'    => null,
+            ]);
         } catch (\Throwable $e) {
             json_response(['status' => false, 'message' => $e->getMessage(), 'data' => null], 422);
         }

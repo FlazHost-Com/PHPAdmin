@@ -12,13 +12,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  *
  * Pivot tables: users_roles (user_id, role_id).
  * All belongsToMany arguments are explicit to avoid magic resolution.
+ *
+ * @property string $id
+ * @property string $code
+ * @property string $name
+ * @property string|null $phone
+ * @property string $email
+ * @property string|null $email_verified_at
+ * @property string $password
+ * @property string|null $password_otp
+ * @property int|null $password_otp_expires
+ * @property string $status
+ * @property string|null $picture
+ * @property bool|int $blocked
+ * @property string|null $blocked_reason
+ * @property string $timezone
+ * @property string|null $created_by
+ * @property string|null $updated_by
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Role> $roles
+ *
+ * @method static static|null find(mixed $id, array|string $columns = ['*'])
+ * @method static \Illuminate\Database\Eloquent\Builder<static> where(mixed $col, mixed $op = null, mixed $val = null)
  */
 class User extends Model
 {
     protected $table      = 'users';
-    public    $incrementing = false;
+    public $incrementing = false;
     protected $keyType    = 'string';
-    public    $timestamps = true;
+    public $timestamps = true;
 
     /** @var list<string> */
     protected $fillable = [
@@ -34,6 +57,9 @@ class User extends Model
 
     // ─── Relations ───────────────────────────────────────────────────────────
 
+    /**
+     * @return BelongsToMany<Role, $this>
+     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'users_roles', 'user_id', 'role_id');

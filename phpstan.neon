@@ -4,5 +4,7 @@ parameters:
         - src
     excludePaths:
         - src/Core/helpers.php
-    checkMissingIterableValueType: false
+    ignoreErrors:
+        - identifier: missingType.iterableValue
+    treatPhpDocTypesAsCertain: false
     reportUnmatchedIgnoredErrors: false

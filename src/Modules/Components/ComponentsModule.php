@@ -22,7 +22,8 @@ class ComponentsModule
 {
     public function __construct(
         private readonly AppConfig $config
-    ) {}
+    ) {
+    }
 
     public function register(RouteCollector $r, RouteRegistry $registry): void
     {

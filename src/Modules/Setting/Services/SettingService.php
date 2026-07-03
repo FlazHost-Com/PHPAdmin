@@ -37,21 +37,81 @@ class SettingService implements ISettingService
 
     /** Curated fallback when GitHub is unreachable. */
     private const FALLBACK_CATALOG = [
-        ['slug' => 'agency-consulting-002-creative-agency',                        'name' => 'Creative Agency',             'category' => 'Agency Consulting'],
-        ['slug' => 'agency-consulting-001-digital-marketing-agency',               'name' => 'Digital Marketing Agency',    'category' => 'Agency Consulting'],
-        ['slug' => 'technology-saas-001-hero-focused-conversion-page',             'name' => 'Hero Focused Conversion Page','category' => 'Technology'],
-        ['slug' => 'technology-saas-002-feature-rich-multi-section',               'name' => 'Feature Rich Multi Section',  'category' => 'Technology'],
-        ['slug' => 'ecommerce-retail-001-fashion-boutique',                        'name' => 'Fashion Boutique',            'category' => 'Ecommerce Retail'],
-        ['slug' => 'ecommerce-retail-002-luxury-fashion-brand',                    'name' => 'Luxury Fashion Brand',        'category' => 'Ecommerce Retail'],
-        ['slug' => 'portfolio-creative-001-creative-portfolio',                    'name' => 'Creative Portfolio',          'category' => 'Portfolio Creative'],
-        ['slug' => 'portfolio-creative-002-minimal-portfolio',                     'name' => 'Minimal Portfolio',           'category' => 'Portfolio Creative'],
-        ['slug' => 'healthcare-medical-001-clinic-services',                       'name' => 'Clinic Services',             'category' => 'Healthcare Medical'],
-        ['slug' => 'education-learning-001-online-course-platform',                'name' => 'Online Course Platform',      'category' => 'Education Learning'],
-        ['slug' => 'restaurant-food-001-fine-dining',                              'name' => 'Fine Dining',                 'category' => 'Restaurant Food'],
-        ['slug' => 'real-estate-property-001-luxury-properties',                   'name' => 'Luxury Properties',           'category' => 'Real Estate Property'],
-        ['slug' => 'nonprofit-charity-001-fundraising',                            'name' => 'Fundraising',                 'category' => 'Nonprofit Charity'],
-        ['slug' => 'travel-tourism-001-travel-agency',                             'name' => 'Travel Agency',               'category' => 'Travel Tourism'],
-        ['slug' => 'fitness-wellness-001-gym-studio',                              'name' => 'Gym Studio',                  'category' => 'Fitness Wellness'],
+        [
+            'slug'     => 'agency-consulting-002-creative-agency',
+            'name'     => 'Creative Agency',
+            'category' => 'Agency Consulting',
+        ],
+        [
+            'slug'     => 'agency-consulting-001-digital-marketing-agency',
+            'name'     => 'Digital Marketing Agency',
+            'category' => 'Agency Consulting',
+        ],
+        [
+            'slug'     => 'technology-saas-001-hero-focused-conversion-page',
+            'name'     => 'Hero Focused Conversion Page',
+            'category' => 'Technology',
+        ],
+        [
+            'slug'     => 'technology-saas-002-feature-rich-multi-section',
+            'name'     => 'Feature Rich Multi Section',
+            'category' => 'Technology',
+        ],
+        [
+            'slug'     => 'ecommerce-retail-001-fashion-boutique',
+            'name'     => 'Fashion Boutique',
+            'category' => 'Ecommerce Retail',
+        ],
+        [
+            'slug'     => 'ecommerce-retail-002-luxury-fashion-brand',
+            'name'     => 'Luxury Fashion Brand',
+            'category' => 'Ecommerce Retail',
+        ],
+        [
+            'slug'     => 'portfolio-creative-001-creative-portfolio',
+            'name'     => 'Creative Portfolio',
+            'category' => 'Portfolio Creative',
+        ],
+        [
+            'slug'     => 'portfolio-creative-002-minimal-portfolio',
+            'name'     => 'Minimal Portfolio',
+            'category' => 'Portfolio Creative',
+        ],
+        [
+            'slug'     => 'healthcare-medical-001-clinic-services',
+            'name'     => 'Clinic Services',
+            'category' => 'Healthcare Medical',
+        ],
+        [
+            'slug'     => 'education-learning-001-online-course-platform',
+            'name'     => 'Online Course Platform',
+            'category' => 'Education Learning',
+        ],
+        [
+            'slug'     => 'restaurant-food-001-fine-dining',
+            'name'     => 'Fine Dining',
+            'category' => 'Restaurant Food',
+        ],
+        [
+            'slug'     => 'real-estate-property-001-luxury-properties',
+            'name'     => 'Luxury Properties',
+            'category' => 'Real Estate Property',
+        ],
+        [
+            'slug'     => 'nonprofit-charity-001-fundraising',
+            'name'     => 'Fundraising',
+            'category' => 'Nonprofit Charity',
+        ],
+        [
+            'slug'     => 'travel-tourism-001-travel-agency',
+            'name'     => 'Travel Agency',
+            'category' => 'Travel Tourism',
+        ],
+        [
+            'slug'     => 'fitness-wellness-001-gym-studio',
+            'name'     => 'Gym Studio',
+            'category' => 'Fitness Wellness',
+        ],
     ];
 
     // ─── In-memory catalog memo (static: survives within the request) ─────────
@@ -219,7 +279,7 @@ class SettingService implements ISettingService
         $all  = $this->catalogList();
         $cats = array_unique(array_column($all, 'category'));
         sort($cats);
-        return array_values($cats);
+        return $cats;
     }
 
     // ─── Private: catalog ─────────────────────────────────────────────────────
@@ -310,7 +370,7 @@ class SettingService implements ISettingService
             return null;
         }
         try {
-            $body = json_decode($raw, true);
+            $body = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
             $tree = $body['tree'] ?? [];
         } catch (\Throwable) {
             return null;
@@ -336,7 +396,7 @@ class SettingService implements ISettingService
         usort($items, static fn($a, $b) =>
             $a['category'] <=> $b['category'] ?: $a['name'] <=> $b['name']);
 
-        return array_values($items);
+        return $items;
     }
 
     /**

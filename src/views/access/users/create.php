@@ -1,4 +1,5 @@
 <?php
+
 /**
  * User create view.
  *
@@ -9,7 +10,9 @@
  *   $timezones string[]
  *   $_csrf    string
  */
+
 declare(strict_types=1);
+
 ?>
 <div class="flex items-center justify-between mb-6">
   <h1 class="text-2xl font-bold text-gray-800">User Management</h1>
@@ -25,7 +28,9 @@ declare(strict_types=1);
       <input id="code" type="text"
              class="form-control <?= has_error('code') ? 'is-invalid' : '' ?>"
              name="code" value="<?= old('code') ?>">
-      <?php if (has_error('code')): ?><div class="invalid-feedback"><?= get_error('code') ?></div><?php endif; ?>
+      <?php if (has_error('code')) :
+            ?><div class="invalid-feedback"><?= get_error('code') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -33,7 +38,9 @@ declare(strict_types=1);
       <input id="name" type="text"
              class="form-control <?= has_error('name') ? 'is-invalid' : '' ?>"
              name="name" value="<?= old('name') ?>">
-      <?php if (has_error('name')): ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php endif; ?>
+      <?php if (has_error('name')) :
+            ?><div class="invalid-feedback"><?= get_error('name') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -41,7 +48,9 @@ declare(strict_types=1);
       <input id="phone" type="text"
              class="form-control <?= has_error('phone') ? 'is-invalid' : '' ?>"
              name="phone" value="<?= old('phone') ?>">
-      <?php if (has_error('phone')): ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php endif; ?>
+      <?php if (has_error('phone')) :
+            ?><div class="invalid-feedback"><?= get_error('phone') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -49,18 +58,22 @@ declare(strict_types=1);
       <input id="email" type="email"
              class="form-control <?= has_error('email') ? 'is-invalid' : '' ?>"
              name="email" value="<?= old('email') ?>">
-      <?php if (has_error('email')): ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php endif; ?>
+      <?php if (has_error('email')) :
+            ?><div class="invalid-feedback"><?= get_error('email') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
       <label for="timezone" class="form-label fw-semibold">Timezone</label>
       <select id="timezone" name="timezone"
               class="form-control <?= has_error('timezone') ? 'is-invalid' : '' ?>">
-        <?php foreach (($timezones ?? []) as $tz): ?>
+        <?php foreach (($timezones ?? []) as $tz) : ?>
           <option value="<?= e($tz) ?>" <?= old('timezone', 'UTC') === $tz ? 'selected' : '' ?>><?= e($tz) ?></option>
         <?php endforeach; ?>
       </select>
-      <?php if (has_error('timezone')): ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php endif; ?>
+      <?php if (has_error('timezone')) :
+            ?><div class="invalid-feedback"><?= get_error('timezone') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -68,7 +81,9 @@ declare(strict_types=1);
       <input id="password" type="password"
              class="form-control <?= has_error('password') ? 'is-invalid' : '' ?>"
              name="password" value="">
-      <?php if (has_error('password')): ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php endif; ?>
+      <?php if (has_error('password')) :
+            ?><div class="invalid-feedback"><?= get_error('password') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -76,7 +91,9 @@ declare(strict_types=1);
       <input id="password_confirmation" type="password"
              class="form-control <?= has_error('password_confirmation') ? 'is-invalid' : '' ?>"
              name="password_confirmation" value="">
-      <?php if (has_error('password_confirmation')): ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php endif; ?>
+      <?php if (has_error('password_confirmation')) :
+            ?><div class="invalid-feedback"><?= get_error('password_confirmation') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -86,7 +103,9 @@ declare(strict_types=1);
         <option value="Active"   <?= old('status', 'Active') === 'Active'   ? 'selected' : '' ?>>Active</option>
         <option value="Inactive" <?= old('status', 'Active') === 'Inactive' ? 'selected' : '' ?>>Inactive</option>
       </select>
-      <?php if (has_error('status')): ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php endif; ?>
+      <?php if (has_error('status')) :
+            ?><div class="invalid-feedback"><?= get_error('status') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -96,7 +115,9 @@ declare(strict_types=1);
              class="form-control <?= has_error('picture') ? 'is-invalid' : '' ?>"
              name="picture" accept="image/*"
              onchange="previewImage(this, 'img-preview')">
-      <?php if (has_error('picture')): ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php endif; ?>
+      <?php if (has_error('picture')) :
+            ?><div class="text-danger small mt-1"><?= get_error('picture') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-3">
@@ -114,13 +135,15 @@ declare(strict_types=1);
       <input id="blocked_reason" type="text"
              class="form-control <?= has_error('blocked_reason') ? 'is-invalid' : '' ?>"
              name="blocked_reason" value="">
-      <?php if (has_error('blocked_reason')): ?><div class="invalid-feedback"><?= get_error('blocked_reason') ?></div><?php endif; ?>
+      <?php if (has_error('blocked_reason')) :
+            ?><div class="invalid-feedback"><?= get_error('blocked_reason') ?></div><?php
+      endif; ?>
     </div>
 
     <div class="mb-4">
       <label class="form-label fw-semibold d-block">Role</label>
       <div class="d-flex flex-wrap gap-3 p-2 rounded border <?= has_error('roles') ? 'border-danger' : '' ?>">
-        <?php foreach (($roles ?? []) as $i => $role): ?>
+        <?php foreach (($roles ?? []) as $i => $role) : ?>
           <label class="d-flex align-items-center gap-2">
             <input id="roles<?= $i ?>" type="checkbox" name="roles[]"
                    value="<?= e($role->id) ?>" class="w-4 h-4">

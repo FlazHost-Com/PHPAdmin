@@ -14,7 +14,10 @@ interface IUserService
      * Filters: q_code, q_name, q_phone, q_email (LIKE), q_status (exact), q_role (role id).
      *
      * @param  array<string,mixed> $filters
-     * @return array{items: list<User>, total: int, page: int, per_page: int, last_page: int}
+     * @return array{
+     *     datas: list<User>,
+     *     paginate_data: array{total_data: int, page_size: int, current_page: int, total_page: int}
+     * }
      */
     public function index(array $filters, int $perPage, int $page): array;
 

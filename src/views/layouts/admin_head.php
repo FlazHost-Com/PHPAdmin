@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Admin head layout partial.
  *
@@ -11,7 +12,9 @@
  *   $currentUser object|null
  *   $pageTitle   string
  */
+
 declare(strict_types=1);
+
 ?>
 <!DOCTYPE html>
 <html lang="id">

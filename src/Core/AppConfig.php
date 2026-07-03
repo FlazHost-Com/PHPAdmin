@@ -18,7 +18,7 @@ readonly class AppConfig
     // Database
     public string $dbDriver;
     public string $dbHost;
-    public int    $dbPort;
+    public int $dbPort;
     public string $dbDatabase;
     public string $dbUsername;
     public string $dbPassword;
@@ -26,23 +26,23 @@ readonly class AppConfig
 
     // Redis
     public string $redisHost;
-    public int    $redisPort;
+    public int $redisPort;
     public string $redisPassword;
 
     // Session & Auth
     public string $sessionDriver;
     public string $sessionSecret;
-    public int    $sessionTtlHours;
+    public int $sessionTtlHours;
     public string $jwtSecret;
     public string $jwtExpiresIn;
-    public int    $bcryptRounds;
-    public int    $otpExpiryMinutes;
-    public int    $defaultPageSize;
+    public int $bcryptRounds;
+    public int $otpExpiryMinutes;
+    public int $defaultPageSize;
 
     // Mail
     public string $mailHost;
-    public int    $mailPort;
-    public bool   $mailSecure;
+    public int $mailPort;
+    public bool $mailSecure;
     public string $mailUsername;
     public string $mailPassword;
     public string $mailFromAddress;
@@ -56,8 +56,8 @@ readonly class AppConfig
     public string $storageEndpoint;
     public string $storageBucket;
     public string $storageRegion;
-    public bool   $storageSsl;
-    public bool   $storagePathStyle;
+    public bool $storageSsl;
+    public bool $storagePathStyle;
     public string $storageBaseUrl;
 
     // Timezone
@@ -113,12 +113,15 @@ readonly class AppConfig
         $this->storageDriver          = $_ENV['STORAGE_DRIVER']           ?? 'local';
         $this->storageBasePath        = rtrim($_ENV['STORAGE_BASE_PATH']  ?? 'storage/uploads', '/');
         $this->storageAccessKeyId     = $_ENV['STORAGE_ACCESS_KEY_ID']    ?? ($_ENV['AWS_KEY']    ?? '');
-        $this->storageSecretAccessKey = $_ENV['STORAGE_SECRET_ACCESS_KEY']?? ($_ENV['AWS_SECRET'] ?? '');
+        $this->storageSecretAccessKey = $_ENV['STORAGE_SECRET_ACCESS_KEY'] ?? ($_ENV['AWS_SECRET'] ?? '');
         $this->storageEndpoint        = rtrim($_ENV['STORAGE_ENDPOINT']   ?? ($_ENV['AWS_ENDPOINT'] ?? ''), '/');
         $this->storageBucket          = $_ENV['STORAGE_BUCKET']           ?? ($_ENV['AWS_BUCKET'] ?? '');
         $this->storageRegion          = $_ENV['STORAGE_REGION']           ?? ($_ENV['AWS_REGION'] ?? 'us-east-1');
         $this->storageSsl             = filter_var($_ENV['STORAGE_SSL']   ?? 'true', FILTER_VALIDATE_BOOLEAN);
-        $this->storagePathStyle       = filter_var($_ENV['STORAGE_PATH_STYLE'] ?? ($_ENV['AWS_PATH_STYLE'] ?? 'false'), FILTER_VALIDATE_BOOLEAN);
+        $this->storagePathStyle       = filter_var(
+            $_ENV['STORAGE_PATH_STYLE'] ?? ($_ENV['AWS_PATH_STYLE'] ?? 'false'),
+            FILTER_VALIDATE_BOOLEAN
+        );
         $this->storageBaseUrl         = rtrim($_ENV['STORAGE_BASE_URL'] ?? '', '/');
 
         $this->tz = $_ENV['TZ'] ?? 'UTC';

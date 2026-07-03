@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Auth — Register view (inner content only; wrapped by full_width.php layout).
  *
@@ -8,6 +9,7 @@
  *   $errors   array<string,string>   per-field validation errors
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 $_settingArr  = is_array($setting ?? null) ? $setting : (is_object($setting ?? null) ? (array)$setting : []);
@@ -45,7 +47,7 @@ function _regIsInvalid(string $field, array $errs): string
         </div>
 
         <!-- Flash error -->
-        <?php if ($_flashError !== ''): ?>
+        <?php if ($_flashError !== '') : ?>
             <div class="alert alert-danger"><?= e($_flashError) ?></div>
         <?php endif; ?>
 
@@ -67,7 +69,7 @@ function _regIsInvalid(string $field, array $errs): string
                        name="code"
                        value="<?= old('code') ?>"
                        autocomplete="off">
-                <?php if (_regErr('code', $__errors) !== ''): ?>
+                <?php if (_regErr('code', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_regErr('code', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -80,7 +82,7 @@ function _regIsInvalid(string $field, array $errs): string
                        name="name"
                        value="<?= old('name') ?>"
                        autocomplete="name">
-                <?php if (_regErr('name', $__errors) !== ''): ?>
+                <?php if (_regErr('name', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_regErr('name', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -93,7 +95,7 @@ function _regIsInvalid(string $field, array $errs): string
                        name="email"
                        value="<?= old('email') ?>"
                        autocomplete="email">
-                <?php if (_regErr('email', $__errors) !== ''): ?>
+                <?php if (_regErr('email', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_regErr('email', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -105,7 +107,7 @@ function _regIsInvalid(string $field, array $errs): string
                        class="form-control<?= _regIsInvalid('password', $__errors) ?>"
                        name="password"
                        autocomplete="new-password">
-                <?php if (_regErr('password', $__errors) !== ''): ?>
+                <?php if (_regErr('password', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_regErr('password', $__errors)) ?></div>
                 <?php endif; ?>
             </div>
@@ -117,7 +119,7 @@ function _regIsInvalid(string $field, array $errs): string
                        class="form-control<?= _regIsInvalid('password_confirmation', $__errors) ?>"
                        name="password_confirmation"
                        autocomplete="new-password">
-                <?php if (_regErr('password_confirmation', $__errors) !== ''): ?>
+                <?php if (_regErr('password_confirmation', $__errors) !== '') : ?>
                     <div class="invalid-feedback"><?= e(_regErr('password_confirmation', $__errors)) ?></div>
                 <?php endif; ?>
             </div>

@@ -16,7 +16,8 @@ class DatabaseSessionHandler implements \SessionHandlerInterface
     public function __construct(
         private readonly \PDO $pdo,
         private readonly int $ttl = 7200
-    ) {}
+    ) {
+    }
 
     public function open(string $path, string $name): bool
     {

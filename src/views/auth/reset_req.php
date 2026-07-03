@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Auth — Forgot password / OTP request view (inner content only).
  *
@@ -8,6 +9,7 @@
  *   $errors   array<string,string>
  *   $_csrf    string
  */
+
 declare(strict_types=1);
 
 $_settingArr   = is_array($setting ?? null) ? $setting : (is_object($setting ?? null) ? (array)$setting : []);
@@ -38,10 +40,10 @@ $__emailErr    = (string)($__errors['email'] ?? '');
         </div>
 
         <!-- Flash messages -->
-        <?php if ($_flashError !== ''): ?>
+        <?php if ($_flashError !== '') : ?>
             <div class="alert alert-danger"><?= e($_flashError) ?></div>
         <?php endif; ?>
-        <?php if ($_flashSuccess !== ''): ?>
+        <?php if ($_flashSuccess !== '') : ?>
             <div class="alert alert-success"><?= e($_flashSuccess) ?></div>
         <?php endif; ?>
 
@@ -63,7 +65,7 @@ $__emailErr    = (string)($__errors['email'] ?? '');
                        name="email"
                        value="<?= old('email') ?>"
                        autocomplete="email">
-                <?php if ($__emailErr !== ''): ?>
+                <?php if ($__emailErr !== '') : ?>
                     <div class="invalid-feedback"><?= e($__emailErr) ?></div>
                 <?php endif; ?>
             </div>
