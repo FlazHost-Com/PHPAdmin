@@ -197,7 +197,7 @@ $_copyright = e((string)($setting['copyright']
           </h1>
           <p class="text-lg text-neutral-600 dark:text-neutral-400 mb-8" data-animate="text">
             <?php if ($_desc !== '') : ?>
-            <?= $_desc ?>
+                <?= $_desc ?>
             <?php else : ?>
             Partner with us to transform your vision into exceptional digital experiences. From strategy to execution, we deliver solutions that drive growth and innovation.
             <?php endif; ?>

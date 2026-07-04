@@ -505,7 +505,7 @@ class SettingService implements ISettingService
         // (diisi otomatis file_get_contents dengan wrapper http).
         $responseHeaders = function_exists('http_get_last_response_headers')
             ? (http_get_last_response_headers() ?? [])
-            : ($http_response_header ?? []);
+            : $http_response_header;
         if (!empty($responseHeaders)) {
             if (preg_match('/HTTP\/\S+ (\d{3})/', $responseHeaders[0], $m)) {
                 $status = (int)$m[1];
